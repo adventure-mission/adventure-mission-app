@@ -103,7 +103,16 @@ export default function AnalyticsPage() {
     <div className="flex-1 flex flex-col min-h-screen bg-background-light pb-12 select-none print:bg-white print:pb-0">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10 shadow-sm print:hidden">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/parent/dashboard')} className="text-text-muted hover:text-text-main">
+          <button
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/route');
+              }
+            }}
+            className="text-text-muted hover:text-text-main"
+          >
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="font-bold text-text-main text-lg">成長ダッシュボード 📈</h1>

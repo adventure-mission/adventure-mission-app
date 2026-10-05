@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useQuestSync } from '@/hooks/useQuestSync';
 import QuestList from '@/components/child/QuestList';
 import { type MapPin } from '@/types';
-import { Moon, Star, Plus, Wifi, WifiOff, Settings } from 'lucide-react';
+import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen } from 'lucide-react';
 import CampView from '../camp/page'; // おやすみピン画面
 
 export default function RoutePage() {
@@ -180,24 +180,36 @@ export default function RoutePage() {
           </div>
         </div>
 
-        {/* 星の獲得状況（今日の進捗 / トータル） */}
-        <div className="flex flex-col items-end gap-1.5">
-          {/* きょう獲得できる星 */}
-          <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-100 px-2.5 py-1 rounded-full">
-            <span className="text-[10px] font-bold text-yellow-700">きょう:</span>
-            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-400" />
-            <span className="font-extrabold text-yellow-700 text-xs">
-              {todayEarned} / {todayTotal}
-            </span>
-          </div>
+        {/* 星の獲得状況 ＆ せいちょうグラフへのクイックボタン */}
+        <div className="flex items-center gap-2">
+          {/* せいちょうグラフボタン */}
+          <button
+            onClick={() => router.push('/analytics')}
+            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-2xl bg-purple-50 hover:bg-purple-100 active:scale-95 transition-all text-purple-600 border border-purple-200 shadow-sm"
+            title="せいちょうグラフを見る"
+          >
+            <TrendingUp className="w-4 h-4 text-purple-600" />
+            <span className="text-[9px] font-extrabold mt-0.5 leading-none">グラフ</span>
+          </button>
 
-          {/* トータル星 */}
-          <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
-            <span className="text-[10px] font-bold text-blue-700">トータル:</span>
-            <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-300" />
-            <span className="font-extrabold text-blue-700 text-xs">
-              {profile?.total_stars ?? 12}
-            </span>
+          <div className="flex flex-col items-end gap-1.5">
+            {/* きょう獲得できる星 */}
+            <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-100 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] font-bold text-yellow-700">きょう:</span>
+              <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-400" />
+              <span className="font-extrabold text-yellow-700 text-xs">
+                {todayEarned} / {todayTotal}
+              </span>
+            </div>
+
+            {/* トータル星 */}
+            <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] font-bold text-blue-700">トータル:</span>
+              <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-300" />
+              <span className="font-extrabold text-blue-700 text-xs">
+                {profile?.total_stars ?? 12}
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -242,7 +254,39 @@ export default function RoutePage() {
       {/* FABメニュー項目 */}
       {isFabOpen && (
         <div className="absolute bottom-24 right-6 flex flex-col items-end gap-3 z-40">
-          {/* 1. 予定を登録する */}
+          {/* 1. できたこと日記 */}
+          <div className="flex items-center gap-3">
+            <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
+              できたこと日記 📝
+            </span>
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                router.push('/diary');
+              }}
+              className="w-12 h-12 bg-yellow-400 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 hover:bg-yellow-500"
+            >
+              <BookOpen className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* 2. せいちょうグラフ */}
+          <div className="flex items-center gap-3">
+            <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
+              せいちょうグラフ 📈
+            </span>
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                router.push('/analytics');
+              }}
+              className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 hover:bg-purple-600"
+            >
+              <TrendingUp className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* 3. 予定を登録する */}
           <div className="flex items-center gap-3">
             <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
               予定を登録する
@@ -258,7 +302,7 @@ export default function RoutePage() {
             </button>
           </div>
 
-          {/* 2. 予定を設定する */}
+          {/* 4. 予定を設定する */}
           <div className="flex items-center gap-3">
             <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
               予定を設定する
