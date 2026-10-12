@@ -6,6 +6,7 @@ import {
   syncUpdateQuestStatus,
   syncSaveDiary,
   syncUpdateProfile,
+  syncDeleteQuest,
 } from '@/lib/syncService';
 
 // 初期状態のための日付文字列取得
@@ -70,6 +71,7 @@ interface AppState {
   updateQuestStatus: (id: string, status: QuestStatus) => void;
   generateRecurringInstances: () => void;
   updateQuest: (id: string, updated: Partial<RegisteredQuest>) => void;
+  deleteQuest: (id: string, deleteAllRecurring?: boolean) => void;
   addDiary: (diary: Omit<DiaryEntry, 'id'>) => void;
   resetToDefaults: () => void;
 
@@ -242,6 +244,28 @@ export const useAppStore = create<AppState>()(
         }
       },
 
+      deleteQuest: (id, deleteAllRecurring = false) => {
+        let cascade = deleteAllRecurring;
+        set((state) => {
+          const target = state.quests.find((q) => q.id === id);
+          if (!target) return {};
+
+          const isMaster = target.isRecurring;
+          if (isMaster) cascade = true;
+
+          const newQuests = state.quests.filter((q) => {
+            if (q.id === id) return false;
+            if (cascade && q.parentRecurringId === id) return false;
+            return true;
+          });
+
+          return { quests: newQuests };
+        });
+
+        // Supabaseから削除
+        syncDeleteQuest(id, cascade);
+      },
+
       addDiary: (diary) => {
         const newEntry: DiaryEntry = {
           ...diary,
@@ -261,10 +285,10 @@ export const useAppStore = create<AppState>()(
 
       syncFromRemote: ({ quests, diaries, profile }) => set((state) => {
         const updates: Partial<AppState> = {};
-        if (quests && quests.length > 0) {
+        if (quests !== undefined) {
           updates.quests = quests;
         }
-        if (diaries) {
+        if (diaries !== undefined) {
           updates.diaries = diaries;
         }
         if (profile) {

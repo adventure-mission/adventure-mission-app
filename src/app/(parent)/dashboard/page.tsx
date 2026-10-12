@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
 import ApprovalCard from '@/components/parent/ApprovalCard';
-import { type Wish } from '@/types';
-import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2 } from 'lucide-react';
+import { type Wish, type RegisteredQuest } from '@/types';
+import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // 承認待ちのモックデータ
@@ -19,7 +20,7 @@ const initialWishes: Wish[] = [
 ];
 
 export default function ParentDashboard() {
-  const { profile, setProfile, isSleepMode, setIsSleepMode } = useAppStore();
+  const { profile, setProfile, isSleepMode, setIsSleepMode, quests, deleteQuest } = useAppStore();
   const [approvalItems, setApprovalItems] = useState(initialApprovalItems);
   const [wishes, setWishes] = useState<Wish[]>(initialWishes);
 
@@ -28,10 +29,8 @@ export default function ParentDashboard() {
 
   // 1. クエスト承認ハンドラ
   const handleApproveQuest = (logId: string, difficulty: number) => {
-    // 承認待ちリストから除外
     setApprovalItems((prev) => prev.filter((item) => item.logId !== logId));
 
-    // 星の加算
     if (profile) {
       setProfile({
         ...profile,
@@ -39,7 +38,6 @@ export default function ParentDashboard() {
       });
     }
 
-    // 承認時のお祝い演出
     confetti({
       particleCount: 80,
       spread: 70,
@@ -54,12 +52,10 @@ export default function ParentDashboard() {
       return;
     }
 
-    // ほしいものリストの更新
     setWishes((prev) =>
       prev.map((w) => (w.id === wishId ? { ...w, status: 'granted' as const } : w))
     );
 
-    // 星の消費
     if (profile) {
       setProfile({
         ...profile,
@@ -67,7 +63,6 @@ export default function ParentDashboard() {
       });
     }
 
-    // お祝い演出
     confetti({
       particleCount: 120,
       spread: 90,
@@ -81,7 +76,6 @@ export default function ParentDashboard() {
     const nextState = !isSleepMode;
     setIsSleepMode(nextState);
     
-    // プロフィール状態も追従（モック）
     if (profile) {
       setProfile({
         ...profile,
@@ -90,14 +84,53 @@ export default function ParentDashboard() {
     }
   };
 
+  // 4. 予定・イベントの削除ハンドラ
+  const handleDeleteQuest = (quest: RegisteredQuest) => {
+    const isRecurringItem = Boolean(quest.isRecurring || quest.parentRecurringId);
+    let deleteEntire = false;
+
+    if (isRecurringItem) {
+      if (quest.isRecurring) {
+        if (!confirm(`「${quest.title}」と、今後生成される関連予定をすべて削除しますか？`)) return;
+        deleteEntire = true;
+      } else {
+        const choice = confirm(`「${quest.title}（${quest.date}）」を削除しますか？\n\n【OK】: この予定を削除する\n【キャンセル】: やめる`);
+        if (!choice) return;
+        deleteEntire = confirm('すべての曜日の繰り返し予定もまとめて削除しますか？\n\n【OK】: すべて削除\n【キャンセル】: この日の予定だけ削除');
+      }
+    } else {
+      if (!confirm(`「${quest.title}」を削除しますか？`)) return;
+    }
+
+    deleteQuest(quest.id, deleteEntire);
+  };
+
+  // 日付順・時間順に並べ替え
+  const sortedQuests = [...quests].sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    if (a.time && !b.time) return -1;
+    if (!a.time && b.time) return 1;
+    return 0;
+  });
+
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-background-light pb-12 select-none">
+    <div className="flex-1 flex flex-col min-h-screen bg-background-light pb-16 select-none">
       {/* 親ヘッダー */}
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10 shadow-sm">
-        <div className="flex items-center gap-2">
-          <Shield className="w-6 h-6 text-quest-mission" />
-          <h1 className="font-bold text-text-main text-lg">おやダッシュボード</h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/route"
+            className="p-1.5 -ml-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all"
+            title="ぼうけん地図へもどる"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <Shield className="w-6 h-6 text-quest-mission" />
+            <h1 className="font-bold text-text-main text-lg">おやダッシュボード</h1>
+          </div>
         </div>
+
         <button className="p-2 text-text-muted hover:text-text-main relative">
           <Bell className="w-6 h-6" />
           {(approvalItems.length > 0 || wishes.some(w => w.status === 'pending_grant')) && (
@@ -135,6 +168,86 @@ export default function ParentDashboard() {
               <span>{isSleepMode ? 'おやすみ中' : 'おやすみにする'}</span>
             </button>
           </div>
+        </section>
+
+        {/* 登録された予定・イベントの管理（削除・追加） */}
+        <section className="space-y-3">
+          <div className="flex justify-between items-center px-1">
+            <h2 className="text-base font-bold text-text-main flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-quest-mission" />
+              <span>予定・イベントの管理 ({sortedQuests.length}件)</span>
+            </h2>
+            <Link
+              href="/quests/new"
+              className="bg-quest-mission text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-blue-600 active:scale-95 transition-all flex items-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>予定を追加</span>
+            </Link>
+          </div>
+
+          {sortedQuests.length === 0 ? (
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
+              現在、登録されている予定はありません。
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sortedQuests.map((q) => (
+                <div
+                  key={q.id}
+                  className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between gap-3 hover:border-gray-200 transition-all"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        q.type === 'routine'
+                          ? 'bg-quest-routine-bg text-quest-routine'
+                          : q.type === 'event'
+                          ? 'bg-quest-event-bg text-yellow-700'
+                          : 'bg-quest-mission-bg text-quest-mission'
+                      }`}>
+                        {q.type === 'routine' ? '約束事' : q.type === 'event' ? 'イベント' : 'ミッション'}
+                      </span>
+                      <span className="text-xs text-text-muted font-bold">
+                        {q.date}
+                      </span>
+                      {q.isRecurring && (
+                        <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold">
+                          繰り返し
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h4 className="font-bold text-text-main text-sm truncate">{q.title}</h4>
+                    
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted mt-1">
+                      {q.time && (
+                        <span className="flex items-center gap-1 font-medium text-gray-600">
+                          <Clock className="w-3 h-3 text-gray-400" />
+                          {q.time}
+                        </span>
+                      )}
+                      {q.location && (
+                        <span className="flex items-center gap-1 text-gray-500 truncate max-w-[120px]">
+                          <MapPinIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                          {q.location}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 削除ボタン */}
+                  <button
+                    onClick={() => handleDeleteQuest(q)}
+                    className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95 flex-shrink-0"
+                    title="この予定を削除"
+                  >
+                    <Trash2 className="w-5 h-5 text-red-400 hover:text-red-600" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* 承認待ちの冒険（ミッション・約束事） */}

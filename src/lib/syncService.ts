@@ -95,6 +95,27 @@ export async function syncUpdateQuestStatus(id: string, status: string) {
   }
 }
 
+// クエストの削除
+export async function syncDeleteQuest(id: string, cascadeRecurring = false) {
+  try {
+    if (cascadeRecurring) {
+      const { error } = await supabase
+        .from('shared_quests')
+        .delete()
+        .or(`id.eq.${id},parent_recurring_id.eq.${id}`);
+      if (error) console.error('Error cascade deleting quest in Supabase:', error);
+    } else {
+      const { error } = await supabase
+        .from('shared_quests')
+        .delete()
+        .eq('id', id);
+      if (error) console.error('Error deleting quest in Supabase:', error);
+    }
+  } catch (err) {
+    console.error('Failed to sync delete quest:', err);
+  }
+}
+
 // 日記の保存
 export async function syncSaveDiary(diary: DiaryEntry) {
   try {

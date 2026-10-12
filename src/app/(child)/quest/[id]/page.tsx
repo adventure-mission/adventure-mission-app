@@ -6,13 +6,13 @@ import { type SubTask } from '@/types';
 import { useQuestSync } from '@/hooks/useQuestSync';
 import { useAppStore } from '@/store/useAppStore';
 import TaskSlider from '@/components/child/TaskSlider';
-import { ArrowLeft, Star, Compass, CheckCircle2, Clock, MapPin as MapPinIcon, Users, FileText, CheckSquare, Sparkles } from 'lucide-react';
+import { ArrowLeft, Star, Compass, CheckCircle2, Clock, MapPin as MapPinIcon, Users, FileText, CheckSquare, Sparkles, Trash2 } from 'lucide-react';
 
 export default function QuestDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { updateQuestStatus } = useQuestSync();
-  const { quests, updateQuestStatus: updateLocalQuestStatus, updateQuest } = useAppStore();
+  const { quests, updateQuestStatus: updateLocalQuestStatus, updateQuest, deleteQuest } = useAppStore();
   const [isPlaying, setIsPlaying] = useState(false);
 
   // マウントチェック (Next.js Hydrationエラー対策)
@@ -53,6 +53,29 @@ export default function QuestDetailPage() {
       alert('きょうはおやすみにしたよ！のんびりしてね 🍵');
       router.push('/route');
     }
+  };
+
+  const handleDelete = () => {
+    if (!quest) return;
+    const isRecurringItem = Boolean(quest.isRecurring || quest.parentRecurringId);
+    
+    let deleteEntire = false;
+    if (isRecurringItem) {
+      if (quest.isRecurring) {
+        if (!confirm(`「${quest.title}」と、今後生成される関連予定をすべて削除しますか？`)) return;
+        deleteEntire = true;
+      } else {
+        const choice = confirm(`「${quest.title}」を削除しますか？\n\n【OK】: この予定を削除する\n【キャンセル】: やめる`);
+        if (!choice) return;
+        deleteEntire = confirm('すべての曜日の繰り返し予定もまとめて削除しますか？\n\n【OK】: すべて削除\n【キャンセル】: この日の予定だけ削除');
+      }
+    } else {
+      if (!confirm(`「${quest.title}」を削除しますか？`)) return;
+    }
+
+    deleteQuest(quest.id, deleteEntire);
+    alert('予定を削除しました 🗑️');
+    router.push('/route');
   };
 
   // 動的なやることリスト（小項目チェック）の組み立て
@@ -171,13 +194,22 @@ export default function QuestDetailPage() {
       
       {/* 上部ヘッダーと基本情報 */}
       <div>
-        <button
-          onClick={() => router.push('/route')}
-          className="flex items-center gap-2 text-text-muted hover:text-text-main py-2 mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>地図にもどる</span>
-        </button>
+        <div className="flex items-center justify-between py-2 mb-6">
+          <button
+            onClick={() => router.push('/route')}
+            className="flex items-center gap-2 text-text-muted hover:text-text-main"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>地図にもどる</span>
+          </button>
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-1.5 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 shadow-sm border border-red-100"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>予定を削除</span>
+          </button>
+        </div>
 
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-md space-y-4">
           {/* カテゴリバッジ */}
@@ -318,6 +350,17 @@ export default function QuestDetailPage() {
             地図にもどる
           </button>
         )}
+
+        {/* 画面下の控えめな削除ボタン */}
+        <div className="text-center pt-1">
+          <button
+            onClick={handleDelete}
+            className="text-xs text-red-400 hover:text-red-600 font-bold inline-flex items-center gap-1 py-1"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>この予定を完全に削除する</span>
+          </button>
+        </div>
       </div>
 
     </div>
