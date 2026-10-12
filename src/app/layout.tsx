@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import SupabaseSyncProvider from "@/components/SupabaseSyncProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,9 +34,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="antialiased min-h-screen bg-background-light text-text-main">
-        <main className="max-w-md mx-auto min-h-screen shadow-lg bg-white relative flex flex-col">
-          {children}
-        </main>
+        <SupabaseSyncProvider>
+          <main className="max-w-md mx-auto min-h-screen shadow-lg bg-white relative flex flex-col">
+            {children}
+          </main>
+        </SupabaseSyncProvider>
       </body>
     </html>
   );
