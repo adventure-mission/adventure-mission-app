@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useQuestSync } from '@/hooks/useQuestSync';
 import QuestList from '@/components/child/QuestList';
 import { type MapPin } from '@/types';
-import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen } from 'lucide-react';
+import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen, Shield } from 'lucide-react';
 import CampView from '../camp/page'; // おやすみピン画面
 
 export default function RoutePage() {
@@ -16,6 +16,9 @@ export default function RoutePage() {
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [questsList, setQuestsList] = useState<MapPin[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
+
+  // 承認待ち（確認中）の件数
+  const pendingCount = quests.filter((q) => q.status === 'pending').length;
 
   // マウントチェック (Next.js Hydrationエラー対策)
   const [mounted, setMounted] = useState(false);
@@ -180,8 +183,23 @@ export default function RoutePage() {
           </div>
         </div>
 
-        {/* 星の獲得状況 ＆ せいちょうグラフへのクイックボタン */}
+        {/* 星の獲得状況 ＆ せいちょうグラフ・おやダッシュボードへのクイックボタン */}
         <div className="flex items-center gap-2">
+          {/* おやダッシュボードボタン */}
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="relative flex flex-col items-center justify-center px-2.5 py-1.5 rounded-2xl bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all text-quest-mission border border-blue-200 shadow-sm"
+            title="おやダッシュボード（承認・予定管理）"
+          >
+            <Shield className="w-4 h-4 text-quest-mission" />
+            <span className="text-[9px] font-extrabold mt-0.5 leading-none">おや</span>
+            {pendingCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+
           {/* せいちょうグラフボタン */}
           <button
             onClick={() => router.push('/analytics')}
@@ -254,6 +272,32 @@ export default function RoutePage() {
       {/* FABメニュー項目 */}
       {isFabOpen && (
         <div className="absolute bottom-24 right-6 flex flex-col items-end gap-3 z-40">
+          {/* 0. おやダッシュボード */}
+          <div className="flex items-center gap-3">
+            <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
+              <span>おやダッシュボード 🛡️</span>
+              {pendingCount > 0 && (
+                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black animate-pulse">
+                  {pendingCount}件待ち
+                </span>
+              )}
+            </span>
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                router.push('/dashboard');
+              }}
+              className="w-12 h-12 bg-quest-mission text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 hover:bg-blue-600 relative"
+            >
+              <Shield className="w-5 h-5" />
+              {pendingCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* 1. できたこと日記 */}
           <div className="flex items-center gap-3">
             <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">

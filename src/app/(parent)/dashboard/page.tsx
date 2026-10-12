@@ -3,16 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
+import { syncUpdateProfile } from '@/lib/syncService';
 import ApprovalCard from '@/components/parent/ApprovalCard';
 import { type Wish, type RegisteredQuest } from '@/types';
 import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-// 承認待ちのモックデータ
-const initialApprovalItems = [
-  { logId: 'l1', questTitle: '学校のじゅんびをする', childName: '礼', difficulty: 2, completedAt: new Date().toISOString(), type: 'mission' as const },
-  { logId: 'l2', questTitle: '宿題をやる', childName: '礼', difficulty: 3, completedAt: new Date().toISOString(), type: 'mission' as const }
-];
 
 // ほしいもの申請中のモックデータ
 const initialWishes: Wish[] = [
@@ -20,29 +15,43 @@ const initialWishes: Wish[] = [
 ];
 
 export default function ParentDashboard() {
-  const { profile, setProfile, isSleepMode, setIsSleepMode, quests, deleteQuest } = useAppStore();
-  const [approvalItems, setApprovalItems] = useState(initialApprovalItems);
+  const { profile, setProfile, isSleepMode, setIsSleepMode, quests, updateQuestStatus, deleteQuest } = useAppStore();
   const [wishes, setWishes] = useState<Wish[]>(initialWishes);
 
-  // 子供のトータル星数の初期モック（Zustand未設定時のフォールバック）
+  // 子供のトータル星数
   const childStars = profile?.total_stars ?? 12;
 
-  // 1. クエスト承認ハンドラ
-  const handleApproveQuest = (logId: string, difficulty: number) => {
-    setApprovalItems((prev) => prev.filter((item) => item.logId !== logId));
+  // 1. 子供が報告した「確認中（pending）」のクエスト一覧
+  const pendingQuests = quests.filter((q) => q.status === 'pending');
 
+  // クエスト承認ハンドラ
+  const handleApproveQuest = (questId: string, starsToAdd: number) => {
+    // クエストステータスを completed に更新（Supabaseへも自動同期）
+    updateQuestStatus(questId, 'completed');
+
+    // 星の加算
+    const newTotalStars = (profile?.total_stars ?? 12) + starsToAdd;
     if (profile) {
       setProfile({
         ...profile,
-        total_stars: profile.total_stars + difficulty
+        total_stars: newTotalStars
       });
     }
+    syncUpdateProfile({ total_stars: newTotalStars });
 
+    // 承認時のお祝い演出
     confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.6 }
+      particleCount: 100,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#FFCE54', '#FF6B6B', '#4D96FF', '#48BB78']
     });
+  };
+
+  // やり直し（未完了に戻す）ハンドラ
+  const handleRejectQuest = (questId: string) => {
+    if (!confirm('「未完了（やること）」に戻しますか？')) return;
+    updateQuestStatus(questId, 'todo');
   };
 
   // 2. ほしいもの交換承認ハンドラ
@@ -56,12 +65,14 @@ export default function ParentDashboard() {
       prev.map((w) => (w.id === wishId ? { ...w, status: 'granted' as const } : w))
     );
 
+    const newTotalStars = Math.max(0, childStars - requiredStars);
     if (profile) {
       setProfile({
         ...profile,
-        total_stars: Math.max(0, profile.total_stars - requiredStars)
+        total_stars: newTotalStars
       });
     }
+    syncUpdateProfile({ total_stars: newTotalStars });
 
     confetti({
       particleCount: 120,
@@ -133,8 +144,8 @@ export default function ParentDashboard() {
 
         <button className="p-2 text-text-muted hover:text-text-main relative">
           <Bell className="w-6 h-6" />
-          {(approvalItems.length > 0 || wishes.some(w => w.status === 'pending_grant')) && (
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+          {(pendingQuests.length > 0 || wishes.some(w => w.status === 'pending_grant')) && (
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
           )}
         </button>
       </header>
@@ -143,7 +154,7 @@ export default function ParentDashboard() {
         
         {/* 子供の状況カード */}
         <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <h2 className="text-sm font-bold text-text-muted mb-4">礼 のステータス</h2>
+          <h2 className="text-sm font-bold text-text-muted mb-4">{profile?.display_name || '礼'} のステータス</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center">
@@ -168,6 +179,43 @@ export default function ParentDashboard() {
               <span>{isSleepMode ? 'おやすみ中' : 'おやすみにする'}</span>
             </button>
           </div>
+        </section>
+
+        {/* 承認待ちの冒険（子供が「できた！」と報告した確認中の予定） */}
+        <section className="space-y-3">
+          <div className="flex justify-between items-center px-1">
+            <h2 className="text-base font-bold text-text-main flex items-center gap-2">
+              <span className="text-lg">⭐</span>
+              <span>しょうにん待ちのぼうけん ({pendingQuests.length})</span>
+            </h2>
+          </div>
+
+          {pendingQuests.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
+              <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
+              現在、しょうにん待ちの予定はありません。<br />
+              すべて承認済みです！✨
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {pendingQuests.map((q) => (
+                <ApprovalCard
+                  key={q.id}
+                  item={{
+                    logId: q.id,
+                    questTitle: q.title,
+                    childName: profile?.display_name || '礼',
+                    difficulty: q.difficulty,
+                    bonusStars: q.isEventJudgmentDay ? (q.bonusStars ?? 5) : 0,
+                    completedAt: new Date().toISOString(),
+                    type: q.type,
+                  }}
+                  onApprove={handleApproveQuest}
+                  onReject={handleRejectQuest}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* 登録された予定・イベントの管理（削除・追加） */}
@@ -211,6 +259,16 @@ export default function ParentDashboard() {
                       <span className="text-xs text-text-muted font-bold">
                         {q.date}
                       </span>
+                      {q.status === 'pending' && (
+                        <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-bold animate-pulse">
+                          確認中
+                        </span>
+                      )}
+                      {q.status === 'completed' && (
+                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold">
+                          完了
+                        </span>
+                      )}
                       {q.isRecurring && (
                         <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold">
                           繰り返し
@@ -245,32 +303,6 @@ export default function ParentDashboard() {
                     <Trash2 className="w-5 h-5 text-red-400 hover:text-red-600" />
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* 承認待ちの冒険（ミッション・約束事） */}
-        <section className="space-y-3">
-          <div className="flex justify-between items-center px-1">
-            <h2 className="text-base font-bold text-text-main">
-              しょうにん待ちのぼうけん ({approvalItems.length})
-            </h2>
-          </div>
-
-          {approvalItems.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
-              <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              すべて承認済みです！今日もがんばりました✨
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {approvalItems.map((item) => (
-                <ApprovalCard
-                  key={item.logId}
-                  item={item}
-                  onApprove={handleApproveQuest}
-                />
               ))}
             </div>
           )}
