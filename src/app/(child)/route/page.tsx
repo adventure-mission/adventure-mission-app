@@ -115,28 +115,14 @@ export default function RoutePage() {
 
   const { earned: todayEarned, total: todayTotal } = getTodayStarsProgress();
 
-  // 夜21時以降の自動おやすみ判定 ＆ 親手動フラグの監視
+  // 親の手動おやすみモード設定の監視のみ（時間制限による自動制限は撤廃）
   useEffect(() => {
-    const checkSleepTime = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-      
-      // 夜21時(21)以降または朝6時前なら自動的におやすみモード
-      const isNight = currentHour >= 21 || currentHour < 6;
-      
-      // 親設定の手動おやすみモード、または時間によるおやすみモード
-      if (isNight || (profile && profile.is_sleep_mode)) {
-        setIsSleepMode(true);
-      } else {
-        setIsSleepMode(false);
-      }
-    };
-
-    checkSleepTime();
-    const interval = setInterval(checkSleepTime, 60000); // 1分ごとに確認
-
-    return () => clearInterval(interval);
-  }, [profile, setIsSleepMode]);
+    if (profile && profile.is_sleep_mode) {
+      setIsSleepMode(true);
+    } else {
+      setIsSleepMode(false);
+    }
+  }, [profile?.is_sleep_mode, setIsSleepMode]);
 
   const handlePinSelect = (questId: string) => {
     // クエスト詳細（中項目の道）画面へ遷移
