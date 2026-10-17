@@ -226,7 +226,7 @@ export default function ParentDashboard() {
               <span>予定・イベントの管理 ({sortedQuests.length}件)</span>
             </h2>
             <Link
-              href="/quests/new"
+              href="/quest/new?from=dashboard"
               className="bg-quest-mission text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-blue-600 active:scale-95 transition-all flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />

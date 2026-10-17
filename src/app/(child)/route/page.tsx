@@ -314,10 +314,10 @@ export default function RoutePage() {
             </button>
           </div>
 
-          {/* 3. 予定を登録する */}
+          {/* 3. 予定を追加する */}
           <div className="flex items-center gap-3">
             <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
-              予定を登録する
+              予定を追加する ➕
             </span>
             <button
               onClick={() => {
@@ -327,22 +327,6 @@ export default function RoutePage() {
               className="w-12 h-12 bg-quest-mission text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 hover:bg-blue-500"
             >
               <Plus className="w-6 h-6 stroke-[3px]" />
-            </button>
-          </div>
-
-          {/* 4. 予定を設定する */}
-          <div className="flex items-center gap-3">
-            <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
-              予定を設定する
-            </span>
-            <button
-              onClick={() => {
-                setIsFabOpen(false);
-                router.push('/quests/new?from=route');
-              }}
-              className="w-12 h-12 bg-quest-routine text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 hover:bg-green-500"
-            >
-              <Settings className="w-5 h-5" />
             </button>
           </div>
         </div>
