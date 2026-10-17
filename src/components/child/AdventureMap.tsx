@@ -24,7 +24,7 @@ export default function AdventureMap({ pins, onPinSelect }: AdventureMapProps) {
     <div className="relative overflow-y-auto no-scrollbar w-full px-5 py-4 pb-24" style={{ height: 'calc(100vh - 180px)' }}>
       <div className="space-y-3.5 max-w-md mx-auto">
         {pins.map((pin, index) => {
-          const { questId, title, type, status, difficulty, isEventJudgmentDay, time } = pin;
+          const { questId, title, status, difficulty, isEventJudgmentDay, bonusStars, time } = pin;
 
           // 状態に応じたスタイル・アイコン
           let statusBg = 'bg-gray-100 border-gray-200 text-gray-500';
@@ -38,30 +38,17 @@ export default function AdventureMap({ pins, onPinSelect }: AdventureMapProps) {
             statusIcon = <Check className="w-4 h-4 font-bold" />;
           }
 
-          // カテゴリ別のカラーボーダー
-          let borderTheme = 'border-quest-mission-bg border-l-quest-mission';
-          let categoryLabel = 'ミッション';
-          let categoryBadge = 'bg-quest-mission-bg text-quest-mission';
-
-          if (type === 'routine') {
-            borderTheme = 'border-quest-routine-bg border-l-quest-routine';
-            categoryLabel = '約束事';
-            categoryBadge = 'bg-quest-routine-bg text-quest-routine';
-          } else if (type === 'event') {
-            borderTheme = 'border-quest-event-bg border-l-quest-event';
-            categoryLabel = 'イベント';
-            categoryBadge = 'bg-quest-event-bg text-yellow-700';
-          }
-
+          // 統一テーマボーダー（特別な予定は琥珀ゴールド）
+          let borderTheme = 'border-gray-100 border-l-[6px] border-l-quest-mission bg-white';
           if (isEventJudgmentDay) {
-            borderTheme = 'border-rainbow-bg border-l-purple-500';
+            borderTheme = 'border-amber-200 border-l-[6px] border-l-amber-400 bg-amber-50/30';
           }
 
           return (
             <div
               key={questId}
               onClick={() => onPinSelect(questId)}
-              className={`flex items-center justify-between bg-white border-2 border-l-[8px] rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer ${borderTheme} hover:shadow-md relative overflow-hidden`}
+              className={`flex items-center justify-between rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer ${borderTheme} hover:shadow-md relative overflow-hidden`}
             >
               {status === 'completed' && (
                 <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-yellow-400 animate-bounce" />
@@ -88,9 +75,12 @@ export default function AdventureMap({ pins, onPinSelect }: AdventureMapProps) {
 
               {/* 中央: 予定の内容タイトル */}
               <div className="flex-1 min-w-0 px-3 border-l border-gray-100 ml-1">
-                <span className={`inline-block text-[8px] font-bold px-1.5 py-0.5 rounded-md mb-0.5 ${categoryBadge}`}>
-                  {categoryLabel}
-                </span>
+                {isEventJudgmentDay && (
+                  <span className="inline-flex items-center gap-0.5 text-[8px] font-extrabold px-1.5 py-0.5 rounded-md mb-0.5 bg-amber-100 text-amber-800 border border-amber-200">
+                    <Sparkles className="w-2.5 h-2.5 text-amber-600 fill-amber-500" />
+                    特別な予定 (+{bonusStars ?? 5}★)
+                  </span>
+                )}
                 <h3 className="text-sm font-bold text-text-main truncate leading-snug">
                   {title}
                 </h3>

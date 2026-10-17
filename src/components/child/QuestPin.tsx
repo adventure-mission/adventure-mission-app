@@ -12,17 +12,10 @@ interface QuestPinProps {
 export default function QuestPin({ pin, stepNumber }: QuestPinProps) {
   const { type, status, isEventJudgmentDay } = pin;
 
-  // 1. カテゴリ色の定義（枠線の色）
-  let categoryColorClass = 'border-quest-mission'; // 青
-  if (type === 'routine') {
-    categoryColorClass = 'border-quest-routine'; // 緑
-  } else if (type === 'event') {
-    categoryColorClass = 'border-quest-event'; // 金
-  }
-
-  // 特別ピン（虹色エフェクト）
+  // 枠線の色（通常は統一テーマの青、特別な予定は虹色エフェクト）
+  let borderClass = 'border-quest-mission';
   if (isEventJudgmentDay) {
-    categoryColorClass = 'animate-rainbow';
+    borderClass = 'animate-rainbow';
   }
 
   // 2. 状態色の定義（背景色とアイコン/テキスト）
@@ -41,7 +34,7 @@ export default function QuestPin({ pin, stepNumber }: QuestPinProps) {
     <div className="flex flex-col items-center select-none">
       {/* ピンの本体（丸いぷっくりした形状） */}
       <div
-        className={`w-16 h-16 rounded-full border-4 flex items-center justify-center shadow-md transition-all transform hover:scale-105 active:scale-95 ${categoryColorClass} ${bgClass} relative`}
+        className={`w-16 h-16 rounded-full border-4 flex items-center justify-center shadow-md transition-all transform hover:scale-105 active:scale-95 ${borderClass} ${bgClass} relative`}
       >
         {status === 'completed' && (
           <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-yellow-500 animate-bounce" />

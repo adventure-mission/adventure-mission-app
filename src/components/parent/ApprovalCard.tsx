@@ -22,17 +22,6 @@ interface ApprovalCardProps {
 export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCardProps) {
   const { logId, questTitle, childName, difficulty, bonusStars = 0, completedAt, type } = item;
 
-  // タイプごとの背景とテキスト色
-  let typeLabel = 'ミッション';
-  let badgeColor = 'bg-blue-50 text-blue-600 border-blue-100';
-  if (type === 'routine') {
-    typeLabel = '約束事';
-    badgeColor = 'bg-green-50 text-green-600 border-green-100';
-  } else if (type === 'event') {
-    typeLabel = 'イベント';
-    badgeColor = 'bg-yellow-50 text-yellow-600 border-yellow-100';
-  }
-
   // 難易度に応じたプレゼント星数 (難易度 1〜4 + ボーナス星)
   const totalStarsEarned = difficulty + bonusStars;
 
@@ -40,9 +29,15 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
     <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between gap-4">
       {/* 上部：バッジと完了時刻 */}
       <div className="flex justify-between items-center">
-        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${badgeColor}`}>
-          {typeLabel}
-        </span>
+        {bonusStars > 0 || type === 'event' ? (
+          <span className="text-xs font-extrabold px-2.5 py-1 rounded-full border bg-amber-50 text-amber-800 border-amber-200 flex items-center gap-1">
+            ⭐ 特別な予定
+          </span>
+        ) : (
+          <span className="text-xs font-bold text-text-muted">
+            予定の完了報告
+          </span>
+        )}
         <div className="flex items-center gap-1 text-xs text-text-muted">
           <Clock className="w-3.5 h-3.5" />
           <span>{new Date(completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 報告</span>

@@ -20,25 +20,25 @@ const getTodayStr = (offset = 0) => {
 
 // 初期の親設定プリセットテンプレート
 const initialPresets: QuestTemplate[] = [
-  { id: 'pt1', title: '朝食を食べる', type: 'routine', difficulty: 1, goal: 'よく噛んで食べる', promise: '行儀良く食べる' },
+  { id: 'pt1', title: '朝食を食べる', type: 'mission', difficulty: 1, goal: 'よく噛んで食べる', promise: '行儀良く食べる' },
   { id: 'pt2', title: '学校の準備をする', type: 'mission', difficulty: 2, goal: '教科書と筆箱を入れる', promise: '前日の夜に行う' },
   { id: 'pt3', title: '公文の宿題', type: 'mission', difficulty: 3, goal: 'プリントを3枚解く', promise: '片付けをする' },
-  { id: 'pt4', title: '歯磨きをする', type: 'routine', difficulty: 1, goal: '5分間磨く', promise: '綺麗に磨く' },
+  { id: 'pt4', title: '歯磨きをする', type: 'mission', difficulty: 1, goal: '5分間磨く', promise: '綺麗に磨く' },
   { id: 'pt5', title: '歯医者の検診', type: 'event', difficulty: 4, goal: '落ち着いて受ける', promise: '大きく口を開ける' }
 ];
 
 // 初期の登録済み予定（地図に表示されるピン）
 export const initialQuests: RegisteredQuest[] = [
-  { id: 'q1', title: '朝食を食べる', type: 'routine', date: getTodayStr(0), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる', promise: '行儀良く食べる' },
+  { id: 'q1', title: '朝食を食べる', type: 'mission', date: getTodayStr(0), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる', promise: '行儀良く食べる' },
   { id: 'q2', title: '学校の準備をする', type: 'mission', date: getTodayStr(0), difficulty: 2, status: 'pending', goal: '教科書と筆箱を入れる', promise: '前日の夜に行う' },
   { id: 'q3', title: '公文の宿題', type: 'mission', date: getTodayStr(0), difficulty: 3, status: 'todo', goal: 'プリントを3枚解く', promise: '片付けをする' },
-  { id: 'q4', title: '歯磨きをする', type: 'routine', date: getTodayStr(0), difficulty: 1, status: 'todo', goal: '5分間磨く', promise: '綺麗に磨く' },
+  { id: 'q4', title: '歯磨きをする', type: 'mission', date: getTodayStr(0), difficulty: 1, status: 'todo', goal: '5分間磨く', promise: '綺麗に磨く' },
   { id: 'q5', title: '歯医者の検診', type: 'event', date: getTodayStr(0), difficulty: 4, status: 'todo', isEventJudgmentDay: true, bonusStars: 5, goal: '落ち着いて受ける', promise: '大きく口を開ける' },
   // 明日の予定
-  { id: 'q6', title: '朝食を食べる', type: 'routine', date: getTodayStr(1), difficulty: 1, status: 'todo', goal: 'よく噛んで食べる' },
+  { id: 'q6', title: '朝食を食べる', type: 'mission', date: getTodayStr(1), difficulty: 1, status: 'todo', goal: 'よく噛んで食べる' },
   { id: 'q7', title: '学校に行く', type: 'mission', date: getTodayStr(1), difficulty: 2, status: 'todo' },
   { id: 'q8', title: '体操クラブ', type: 'event', date: getTodayStr(1), difficulty: 3, status: 'todo', isEventJudgmentDay: true, bonusStars: 5 },
-  { id: 'q9', title: '歯磨きをする', type: 'routine', date: getTodayStr(1), difficulty: 1, status: 'todo' }
+  { id: 'q9', title: '歯磨きをする', type: 'mission', date: getTodayStr(1), difficulty: 1, status: 'todo' }
 ];
 
 interface AppState {

@@ -212,18 +212,15 @@ export default function QuestDetailPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-md space-y-4">
-          {/* カテゴリバッジ */}
-          <div>
-            <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${
-              quest.type === 'routine'
-                ? 'bg-quest-routine-bg text-quest-routine'
-                : quest.type === 'event'
-                ? 'bg-quest-event-bg text-yellow-700'
-                : 'bg-quest-mission-bg text-quest-mission'
-            }`}>
-              {quest.type === 'routine' ? '約束事' : quest.type === 'event' ? 'イベント' : 'ミッション'}
-            </span>
-          </div>
+          {/* 特別な予定バッジ */}
+          {quest.isEventJudgmentDay && (
+            <div>
+              <span className="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                特別な予定（達成でボーナス星 +{quest.bonusStars ?? 5}★）
+              </span>
+            </div>
+          )}
 
           <h1 className="text-2xl font-bold text-text-main leading-snug">
             {quest.title}

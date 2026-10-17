@@ -43,7 +43,7 @@ function QuestForm() {
   // 繰り返し設定
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
-  const [questType, setQuestType] = useState<'mission' | 'routine' | 'event'>('mission');
+  const [isSpecial, setIsSpecial] = useState(false);
 
   // 初期日付を今日にセット
   useEffect(() => {
@@ -66,7 +66,7 @@ function QuestForm() {
 
         setTitle(target.title);
         setDate(target.date);
-        setQuestType(target.type);
+        setIsSpecial(Boolean(target.isEventJudgmentDay));
         setDifficulty(target.difficulty);
         setGoal(target.goal || '');
         setPromise(target.promise || '');
@@ -138,7 +138,7 @@ function QuestForm() {
       setPromise(template.promise || '');
       setReward(template.reward || '');
       setDifficulty(template.difficulty);
-      setQuestType(template.type);
+      setIsSpecial(template.type === 'event');
       setIsRecurring(false);
       setRecurrenceDays([]);
     }
@@ -185,7 +185,7 @@ function QuestForm() {
 
       updateQuest(updateTargetId, {
         title,
-        type: questType,
+        type: isSpecial ? 'event' : 'mission',
         date,
         time: timeValue,
         location: locationValue || undefined,
@@ -196,13 +196,15 @@ function QuestForm() {
         difficulty,
         isRecurring,
         recurrenceDays,
+        isEventJudgmentDay: isSpecial,
+        bonusStars: isSpecial ? 5 : undefined,
       });
 
       alert('予定を変更しました！✨');
     } else {
       addQuest({
         title,
-        type: questType,
+        type: isSpecial ? 'event' : 'mission',
         date,
         time: timeValue,
         location: locationValue || undefined,
@@ -213,6 +215,8 @@ function QuestForm() {
         difficulty,
         isRecurring,
         recurrenceDays,
+        isEventJudgmentDay: isSpecial,
+        bonusStars: isSpecial ? 5 : undefined,
       });
 
       confetti({
@@ -255,7 +259,7 @@ function QuestForm() {
             <option value="">-- 選択せずに手動で入力する --</option>
             {presetQuests.map((preset) => (
               <option key={preset.id} value={preset.id}>
-                {preset.title} ({preset.type === 'routine' ? '約束' : preset.type === 'mission' ? 'ミッション' : 'イベント'})
+                {preset.title}
               </option>
             ))}
           </select>
@@ -572,28 +576,31 @@ function QuestForm() {
           </div>
         </section>
 
-        {/* 4. カテゴリ選択 */}
+        {/* 4. 特別な予定設定（ボーナス星） */}
         <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
-          <label className="text-xs font-bold text-text-muted block">予定の種類</label>
-          <div className="flex gap-2">
-            {[
-              { id: 'mission', label: 'ミッション', color: 'bg-quest-mission text-white' },
-              { id: 'routine', label: '約束事', color: 'bg-quest-routine text-white' },
-              { id: 'event', label: 'イベント', color: 'bg-quest-event text-yellow-900' }
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setQuestType(cat.id as any)}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                  questType === cat.id
-                    ? `${cat.color} border-transparent shadow-sm`
-                    : 'bg-gray-50 text-text-muted border-gray-100 hover:bg-gray-100'
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <label className="text-sm font-bold text-text-main flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-yellow-500 fill-yellow-400" />
+                特別な予定にする
+              </label>
+              <p className="text-xs text-text-muted">
+                運動会やテスト、お出かけなど。達成時にボーナス星（+5⭐）がもらえます！
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSpecial(!isSpecial)}
+              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                isSpecial ? 'bg-yellow-400' : 'bg-gray-200'
+              }`}
+            >
+              <div
+                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                  isSpecial ? 'right-1' : 'left-1'
                 }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+              />
+            </button>
           </div>
         </section>
 

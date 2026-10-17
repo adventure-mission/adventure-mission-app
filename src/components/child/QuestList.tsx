@@ -28,35 +28,21 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 space-y-4 bg-background-light h-[calc(100vh-180px)]">
       {pins.map((pin, idx) => {
-        const { questId, title, type, status, difficulty, isEventJudgmentDay, bonusStars, time } = pin;
+        const { questId, title, status, difficulty, isEventJudgmentDay, bonusStars, time } = pin;
 
-        // 1. タイプ別のスタイルと絵文字
-        let cardBgClass = 'bg-blue-50/60 border-blue-100/80 hover:bg-blue-50';
-        let badgeBgClass = 'bg-blue-100 text-quest-mission';
-        let typeLabel = 'ミッション';
-        let emoji = '🚀';
-
-        if (type === 'routine') {
-          cardBgClass = 'bg-green-50/60 border-green-100/80 hover:bg-green-50';
-          badgeBgClass = 'bg-green-100 text-quest-routine';
-          typeLabel = '約束事';
-          emoji = '🤝';
-        } else if (type === 'event') {
-          cardBgClass = 'bg-yellow-50/60 border-yellow-100/80 hover:bg-yellow-50';
-          badgeBgClass = 'bg-yellow-100 text-yellow-700';
-          typeLabel = 'イベント';
-          emoji = '👑';
-        }
+        // 1. スタイルとアイコン（統一テーマ ＆ 特別な予定のアクセント）
+        let cardBgClass = 'bg-white border-gray-100 hover:border-blue-200 shadow-sm';
+        let emoji = '📌';
 
         if (isEventJudgmentDay) {
-          cardBgClass = 'bg-gradient-to-r from-amber-50 to-orange-50 border-orange-200 hover:from-amber-100 hover:to-orange-100';
-          emoji = '🌈';
+          cardBgClass = 'bg-gradient-to-r from-amber-50/90 to-yellow-50/90 border-amber-200 hover:border-amber-300 shadow-sm';
+          emoji = '⭐';
         }
 
         // お休み（スキップ）状態のスタイル
         if (status === 'skipped') {
           cardBgClass = 'bg-gray-100 border-gray-200 opacity-60';
-          badgeBgClass = 'bg-gray-200 text-gray-500';
+          emoji = '🍵';
         }
 
         // 2. ステータス別のアクションボタン表示
@@ -98,7 +84,7 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
         return (
           <div
             key={questId}
-            className={`flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border-2 shadow-sm transition-all relative ${cardBgClass}`}
+            className={`flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border-2 transition-all relative ${cardBgClass}`}
           >
             {status === 'completed' && (
               <Sparkles className="absolute -top-2 -right-1 w-5 h-5 text-yellow-500 animate-bounce" />
@@ -114,12 +100,21 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
               {/* コンテンツ */}
               <div className="space-y-1.5 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full ${badgeBgClass}`}>
-                    {status === 'skipped' ? 'お休み' : typeLabel}
-                  </span>
+                  {/* 特別な予定バッジ */}
+                  {isEventJudgmentDay && status !== 'skipped' && (
+                    <span className="flex items-center gap-1 text-[10px] font-extrabold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-200 shadow-xs">
+                      <Sparkles className="w-3 h-3 text-amber-600 fill-amber-500" />
+                      特別な予定 (+{bonusStars ?? 5}★)
+                    </span>
+                  )}
+                  {status === 'skipped' && (
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
+                      お休み
+                    </span>
+                  )}
                   
                   {/* 時間バブル */}
-                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-text-muted bg-white/80 px-2 py-0.5 rounded-full border border-gray-150">
+                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-text-muted bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">
                     <Clock className="w-3 h-3 text-gray-400" />
                     {time || 'いつでも'}
                   </span>
@@ -134,8 +129,8 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
                   {Array.from({ length: difficulty }).map((_, i) => (
                     <Star key={i} className={`w-3.5 h-3.5 ${status === 'skipped' ? 'text-gray-300 fill-gray-300' : 'text-yellow-400 fill-yellow-400'}`} />
                   ))}
-                  {isEventJudgmentDay && (
-                    <span className="text-[9px] font-black text-orange-500 ml-1 flex items-center gap-0.5">
+                  {isEventJudgmentDay && status !== 'skipped' && (
+                    <span className="text-[10px] font-black text-amber-600 ml-1.5 flex items-center gap-0.5">
                       <Gift className="w-3 h-3" />
                       ボーナス星 +{bonusStars ?? 5}
                     </span>

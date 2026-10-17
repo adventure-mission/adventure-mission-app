@@ -247,15 +247,11 @@ export default function ParentDashboard() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        q.type === 'routine'
-                          ? 'bg-quest-routine-bg text-quest-routine'
-                          : q.type === 'event'
-                          ? 'bg-quest-event-bg text-yellow-700'
-                          : 'bg-quest-mission-bg text-quest-mission'
-                      }`}>
-                        {q.type === 'routine' ? '約束事' : q.type === 'event' ? 'イベント' : 'ミッション'}
-                      </span>
+                      {(q.isEventJudgmentDay || q.type === 'event') && (
+                        <span className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                          ⭐ 特別 (+{q.bonusStars ?? 5}★)
+                        </span>
+                      )}
                       <span className="text-xs text-text-muted font-bold">
                         {q.date}
                       </span>
