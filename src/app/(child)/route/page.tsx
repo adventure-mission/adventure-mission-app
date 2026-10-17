@@ -171,7 +171,7 @@ export default function RoutePage() {
               {isOffline ? (
                 <span className="flex items-center text-[10px] text-orange-500 font-bold bg-orange-50 px-1.5 py-0.5 rounded-full">
                   <WifiOff className="w-2.5 h-2.5 mr-0.5" />
-                  オフライン（ほぞん中）
+                  オフライン（保存中）
                 </span>
               ) : (
                 <span className="flex items-center text-[10px] text-green-500 font-bold bg-green-50 px-1.5 py-0.5 rounded-full">
@@ -183,16 +183,15 @@ export default function RoutePage() {
           </div>
         </div>
 
-        {/* 星の獲得状況 ＆ せいちょうグラフ・おやダッシュボードへのクイックボタン */}
+        {/* 星の獲得状況 ＆ アイコンボタン（親ダッシュボード・成長グラフ） */}
         <div className="flex items-center gap-2">
-          {/* おやダッシュボードボタン */}
+          {/* 親ダッシュボードボタン（アイコンのみ） */}
           <button
             onClick={() => router.push('/dashboard')}
-            className="relative flex flex-col items-center justify-center px-2.5 py-1.5 rounded-2xl bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all text-quest-mission border border-blue-200 shadow-sm"
-            title="おやダッシュボード（承認・予定管理）"
+            className="relative w-9 h-9 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all text-quest-mission border border-blue-200 shadow-sm"
+            title="親ダッシュボード（承認・予定管理）"
           >
             <Shield className="w-4 h-4 text-quest-mission" />
-            <span className="text-[9px] font-extrabold mt-0.5 leading-none">おや</span>
             {pendingCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow">
                 {pendingCount}
@@ -200,20 +199,19 @@ export default function RoutePage() {
             )}
           </button>
 
-          {/* せいちょうグラフボタン */}
+          {/* 成長グラフボタン（アイコンのみ） */}
           <button
             onClick={() => router.push('/analytics')}
-            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-2xl bg-purple-50 hover:bg-purple-100 active:scale-95 transition-all text-purple-600 border border-purple-200 shadow-sm"
-            title="せいちょうグラフを見る"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-purple-50 hover:bg-purple-100 active:scale-95 transition-all text-purple-600 border border-purple-200 shadow-sm"
+            title="成長グラフを見る"
           >
             <TrendingUp className="w-4 h-4 text-purple-600" />
-            <span className="text-[9px] font-extrabold mt-0.5 leading-none">グラフ</span>
           </button>
 
           <div className="flex flex-col items-end gap-1.5">
-            {/* きょう獲得できる星 */}
+            {/* 今日獲得できる星 */}
             <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-100 px-2.5 py-1 rounded-full">
-              <span className="text-[10px] font-bold text-yellow-700">きょう:</span>
+              <span className="text-[10px] font-bold text-yellow-700">今日:</span>
               <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-400" />
               <span className="font-extrabold text-yellow-700 text-xs">
                 {todayEarned} / {todayTotal}
@@ -222,7 +220,7 @@ export default function RoutePage() {
 
             {/* トータル星 */}
             <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
-              <span className="text-[10px] font-bold text-blue-700">トータル:</span>
+              <span className="text-[10px] font-bold text-blue-700">合計:</span>
               <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-300" />
               <span className="font-extrabold text-blue-700 text-xs">
                 {profile?.total_stars ?? 12}
@@ -272,10 +270,10 @@ export default function RoutePage() {
       {/* FABメニュー項目 */}
       {isFabOpen && (
         <div className="absolute bottom-24 right-6 flex flex-col items-end gap-3 z-40">
-          {/* 0. おやダッシュボード */}
+          {/* 0. 親ダッシュボード */}
           <div className="flex items-center gap-3">
             <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
-              <span>おやダッシュボード 🛡️</span>
+              <span>親ダッシュボード 🛡️</span>
               {pendingCount > 0 && (
                 <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black animate-pulse">
                   {pendingCount}件待ち
@@ -314,10 +312,10 @@ export default function RoutePage() {
             </button>
           </div>
 
-          {/* 2. せいちょうグラフ */}
+          {/* 2. 成長グラフ */}
           <div className="flex items-center gap-3">
             <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
-              せいちょうグラフ 📈
+              成長グラフ 📈
             </span>
             <button
               onClick={() => {

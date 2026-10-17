@@ -35,22 +35,22 @@ export default function QuestDetailPage() {
         const end = Number(match[2]);
         newTime = `${start}時30分から${end}時30分まで`;
       } else {
-        newTime = `${quest.time}（30分おくれ）`;
+        newTime = `${quest.time}（30分遅れ）`;
       }
     } else {
-      newTime = '30分おくれ';
+      newTime = '30分遅れ';
     }
 
     updateQuest(quest.id, { time: newTime });
-    alert('予定を30分おくらせたよ！⏰');
+    alert('予定を30分遅らせました！⏰');
     router.push('/route');
   };
 
   const handleSkip = () => {
     if (!quest) return;
-    if (confirm('きょうはこの予定をおやすみ（スキップ）する？')) {
+    if (confirm('今日はこの予定をお休み（スキップ）しますか？')) {
       updateQuest(quest.id, { status: 'skipped' });
-      alert('きょうはおやすみにしたよ！のんびりしてね 🍵');
+      alert('今日はお休みにしました！ゆっくり過ごしてください 🍵');
       router.push('/route');
     }
   };
@@ -83,17 +83,17 @@ export default function QuestDetailPage() {
     if (!quest) return [];
 
     const tasks: SubTask[] = [
-      { id: 'st_title', quest_id: quest.id, title: `${quest.title} をやりましょう 🚀`, sort_order: 1 }
+      { id: 'st_title', quest_id: quest.id, title: `${quest.title} を行いましょう 🚀`, sort_order: 1 }
     ];
 
     let order = 2;
 
-    // 時間・場所・だれと の確認ステップ
+    // 時間・場所・誰と の確認ステップ
     if (quest.time || quest.location || quest.people) {
       const details = [
-        quest.time ? `じかん: ${quest.time}` : '',
-        quest.location ? `ばしょ: ${quest.location}` : '',
-        quest.people ? `だれと: ${quest.people}` : ''
+        quest.time ? `時間: ${quest.time}` : '',
+        quest.location ? `場所: ${quest.location}` : '',
+        quest.people ? `誰と: ${quest.people}` : ''
       ].filter(Boolean).join('、');
 
       tasks.push({
@@ -104,32 +104,32 @@ export default function QuestDetailPage() {
       });
     }
 
-    // 目標 (めあて) のステップ
+    // 目標のステップ
     if (quest.goal) {
       tasks.push({
         id: 'st_goal',
         quest_id: quest.id,
-        title: `めあて: ${quest.goal} 🎯`,
+        title: `目標: ${quest.goal} 🎯`,
         sort_order: order++
       });
     }
 
-    // 約束 (ルール) のステップ
+    // 約束のステップ
     if (quest.promise) {
       tasks.push({
         id: 'st_promise',
         quest_id: quest.id,
-        title: `やくそく: ${quest.promise} 🤝`,
+        title: `約束: ${quest.promise} 🤝`,
         sort_order: order++
       });
     }
 
-    // ご褒美 (ごほうび) のステップ
+    // ご褒美のステップ
     if (quest.reward) {
       tasks.push({
         id: 'st_reward',
         quest_id: quest.id,
-        title: `ごほうび: ${quest.reward} 🎁✨`,
+        title: `ご褒美: ${quest.reward} 🎁✨`,
         sort_order: order++
       });
     }
@@ -167,13 +167,13 @@ export default function QuestDetailPage() {
           onClick={() => router.push('/route')}
           className="bg-quest-mission text-white px-6 py-2.5 rounded-full font-bold shadow-sm"
         >
-          地図にもどる
+          地図に戻る
         </button>
       </div>
     );
   }
 
-  // 2. 「ぼうけんをはじめる」プレイ画面
+  // 2. 「冒険を開始する」プレイ画面
   if (isPlaying) {
     return (
       <div className="flex-1 flex flex-col h-screen bg-white">
@@ -200,7 +200,7 @@ export default function QuestDetailPage() {
             className="flex items-center gap-2 text-text-muted hover:text-text-main"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>地図にもどる</span>
+            <span>地図に戻る</span>
           </button>
           <button
             onClick={handleDelete}
@@ -231,7 +231,7 @@ export default function QuestDetailPage() {
 
           {/* 難易度表示（星マーク） */}
           <div className="flex items-center gap-1.5 py-2 border-t border-b border-gray-50">
-            <span className="text-xs font-bold text-text-muted mr-2">むずかしさ:</span>
+            <span className="text-xs font-bold text-text-muted mr-2">難易度:</span>
             {Array.from({ length: 4 }).map((_, i) => (
               <Star
                 key={i}
@@ -270,21 +270,21 @@ export default function QuestDetailPage() {
             {quest.goal && (
               <p className="flex items-center gap-2.5 pt-1">
                 <FileText className="w-4 h-4 text-quest-mission" />
-                <span className="font-bold text-xs bg-blue-50 text-quest-mission border border-blue-100 px-2 py-0.5 rounded flex-shrink-0">めあて</span>
+                <span className="font-bold text-xs bg-blue-50 text-quest-mission border border-blue-100 px-2 py-0.5 rounded flex-shrink-0">目標</span>
                 <span className="text-text-main font-bold">{quest.goal}</span>
               </p>
             )}
             {quest.promise && (
               <p className="flex items-center gap-2.5">
                 <CheckSquare className="w-4 h-4 text-quest-routine" />
-                <span className="font-bold text-xs bg-green-50 text-quest-routine border border-green-100 px-2 py-0.5 rounded flex-shrink-0">やくそく</span>
+                <span className="font-bold text-xs bg-green-50 text-quest-routine border border-green-100 px-2 py-0.5 rounded flex-shrink-0">約束</span>
                 <span className="text-text-main font-bold">{quest.promise}</span>
               </p>
             )}
             {quest.reward && (
               <p className="flex items-center gap-2.5 pt-1">
                 <Sparkles className="w-4 h-4 text-quest-event" />
-                <span className="font-bold text-xs bg-yellow-50 text-yellow-600 border border-yellow-100 px-2 py-0.5 rounded flex-shrink-0">ごほうび</span>
+                <span className="font-bold text-xs bg-yellow-50 text-yellow-600 border border-yellow-100 px-2 py-0.5 rounded flex-shrink-0">ご褒美</span>
                 <span className="text-text-main font-bold">{quest.reward}</span>
               </p>
             )}
@@ -294,7 +294,7 @@ export default function QuestDetailPage() {
           <div className="pt-2">
             <h3 className="text-xs font-bold text-text-muted mb-3 flex items-center gap-1.5">
               <Compass className="w-4 h-4" />
-              ぼうけんのロードマップ
+              冒険の進行計画
             </h3>
             <ul className="space-y-2.5">
               {dynamicSubTasks.map((task, idx) => (
@@ -319,24 +319,24 @@ export default function QuestDetailPage() {
             className="w-full bg-quest-mission text-white font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-blue-500 flex justify-center items-center gap-2"
           >
             <CheckCircle2 className="w-6 h-6" />
-            ぼうけんを はじめる！
+            冒険を開始する！
           </button>
         )}
 
-        {/* 逃げ道ボタン（あとにする・おやすみ） */}
+        {/* 逃げ道ボタン（後回し・お休み） */}
         {quest.status === 'todo' && (
           <div className="flex gap-3">
             <button
               onClick={handleDelay}
               className="flex-1 bg-blue-50 hover:bg-blue-100 text-quest-mission border border-blue-200 font-bold py-3 rounded-full text-xs shadow-sm active:scale-95 transition-all flex justify-center items-center gap-1.5"
             >
-              <span>⏰ あとにする (30分)</span>
+              <span>⏰ 後回しにする (30分)</span>
             </button>
             <button
               onClick={handleSkip}
               className="flex-1 bg-gray-50 hover:bg-gray-100 text-text-muted border border-gray-200 font-bold py-3 rounded-full text-xs shadow-sm active:scale-95 transition-all flex justify-center items-center gap-1.5"
             >
-              <span>🍵 きょうはおやすみ</span>
+              <span>🍵 今日はお休み</span>
             </button>
           </div>
         )}
@@ -347,7 +347,7 @@ export default function QuestDetailPage() {
             onClick={() => router.push('/route')}
             className="w-full bg-gray-200 text-gray-700 font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-gray-300 flex justify-center items-center gap-2"
           >
-            地図にもどる
+            地図に戻る
           </button>
         )}
 

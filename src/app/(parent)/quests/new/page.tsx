@@ -7,10 +7,10 @@ import { ArrowLeft, Star, Save, Plus, Calendar, Sparkles, FileText, CheckSquare 
 
 const PRESETS = {
   mission: [
-    '宿題をやる', '学校に行く', '公文の宿題', 'たいそうクラブ', '明日の用意をする',
-    '朝起きる', '夜寝る', 'ごはんを食べる', '歯みがきをする', 'ペットのお世話', 'お片付け'
+    '宿題をやる', '学校に行く', '公文の宿題', '体操クラブ', '明日の準備をする',
+    '朝起きる', '夜寝る', 'ご飯を食べる', '歯磨きをする', 'ペットのお世話', 'お片付け'
   ],
-  event: ['歯医者のけんしん', '学校の運動会', '公文の進級テスト', 'たいそう大会']
+  event: ['歯医者の検診', '学校の運動会', '公文の進級テスト', '体操大会']
 };
 
 export default function NewQuestPage() {
@@ -61,7 +61,7 @@ export default function NewQuestPage() {
       reward: reward.trim() || undefined
     });
 
-    alert('予定を設定（保存）しました！子供側の「予定を登録する」画面で選べるようになります。');
+    alert('予定を設定（保存）しました！子供側の「予定を登録する」画面で選択できるようになります。');
     router.push(backUrl);
   };
 
@@ -80,7 +80,7 @@ export default function NewQuestPage() {
         
         {/* 1. カテゴリー選択 */}
         <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
-          <label className="text-sm font-bold text-text-muted block">なにを設定する？</label>
+          <label className="text-sm font-bold text-text-muted block">設定の種類を選択</label>
           <div className="grid grid-cols-2 gap-3">
             {[
               { id: 'mission', label: '予定', color: 'bg-quest-mission text-white' },
@@ -110,12 +110,12 @@ export default function NewQuestPage() {
         {/* 2. タイトルとプリセット */}
         <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
           <div>
-            <label className="text-sm font-bold text-text-muted block mb-2">タイトル（すること）</label>
+            <label className="text-sm font-bold text-text-muted block mb-2">タイトル（行うこと）</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="例: 公文の宿題、歯みがき"
+              placeholder="例: 公文の宿題、歯磨き"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-quest-mission text-sm text-text-main select-text"
               required
             />
@@ -123,7 +123,7 @@ export default function NewQuestPage() {
 
           {/* プリセット選択ボタン */}
           <div>
-            <span className="text-xs font-bold text-text-muted block mb-2">よくつかうプリセット:</span>
+            <span className="text-xs font-bold text-text-muted block mb-2">よく使うプリセット:</span>
             <div className="flex flex-wrap gap-2">
               {PRESETS[category].map((preset) => (
                 <button
@@ -144,7 +144,7 @@ export default function NewQuestPage() {
           
           {/* 難易度 */}
           <div>
-            <label className="text-sm font-bold text-text-muted block mb-2">むずかしさ（あげる星の数）</label>
+            <label className="text-sm font-bold text-text-muted block mb-2">難易度（獲得できる星の数）</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4].map((num) => (
                 <button
@@ -171,13 +171,13 @@ export default function NewQuestPage() {
           <div>
             <label className="text-sm font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <FileText className="w-4 h-4 text-quest-mission" />
-              目標（めあて - しなくてもよい）
+              目標（任意）
             </label>
             <input
               type="text"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              placeholder="例: ていねいな字で3まい書く"
+              placeholder="例: 丁寧な字で3枚書く"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm text-text-main select-text"
             />
           </div>
@@ -186,13 +186,13 @@ export default function NewQuestPage() {
           <div>
             <label className="text-sm font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <Sparkles className="w-4 h-4 text-quest-event" />
-              目標達成後のご褒美設定（ごほうび - しなくてもよい）
+              目標達成時のご褒美（任意）
             </label>
             <input
               type="text"
               value={reward}
               onChange={(e) => setReward(e.target.value)}
-              placeholder="例: ポケモンカードを1パックあげる"
+              placeholder="例: お気に入りのお菓子、カード1パック"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm text-text-main select-text"
             />
           </div>
@@ -205,7 +205,7 @@ export default function NewQuestPage() {
           className="w-full bg-quest-routine text-white font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-green-500 flex justify-center items-center gap-2"
         >
           <Save className="w-6 h-6" />
-          <span>これで設定（ほぞん）する！</span>
+          <span>設定を保存する！</span>
         </button>
 
       </form>

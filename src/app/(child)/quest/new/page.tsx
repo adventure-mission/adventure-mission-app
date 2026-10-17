@@ -27,11 +27,11 @@ function QuestForm() {
   const [endTime, setEndTime] = useState('17');
   
   // どこで（場所）ステート
-  const [selectedLocation, setSelectedLocation] = useState('おうち');
+  const [selectedLocation, setSelectedLocation] = useState('自宅');
   const [customLocation, setCustomLocation] = useState('');
   
   // だれと（一緒の人）ステート
-  const [selectedPerson, setSelectedPerson] = useState('ひとりで');
+  const [selectedPerson, setSelectedPerson] = useState('一人で');
   const [customPerson, setCustomPerson] = useState('');
   
   const [title, setTitle] = useState('');
@@ -87,10 +87,16 @@ function QuestForm() {
         }
 
         // 場所の逆変換
-        const presetLocations = ['おうち', '学校', 'こうえん', 'きょうしつ', 'ならいごと'];
+        const presetLocations = ['自宅', '学校', '公園', '教室', '習い事'];
         if (target.location) {
-          if (presetLocations.includes(target.location)) {
-            setSelectedLocation(target.location);
+          if (presetLocations.includes(target.location) || ['おうち', 'こうえん', 'きょうしつ', 'ならいごと'].includes(target.location)) {
+            const locMap: Record<string, string> = {
+              'おうち': '自宅',
+              'こうえん': '公園',
+              'きょうしつ': '教室',
+              'ならいごと': '習い事',
+            };
+            setSelectedLocation(locMap[target.location] || target.location);
             setCustomLocation('');
           } else {
             setSelectedLocation('その他');
@@ -99,10 +105,17 @@ function QuestForm() {
         }
 
         // 一緒の人の逆変換
-        const presetPeople = ['ひとりで', 'おかあさん', 'おとうさん', 'おともだち', 'せんせい'];
+        const presetPeople = ['一人で', 'お母さん', 'お父さん', 'お友達', '先生'];
         if (target.people) {
-          if (presetPeople.includes(target.people)) {
-            setSelectedPerson(target.people);
+          if (presetPeople.includes(target.people) || ['ひとりで', 'おかあさん', 'おとうさん', 'おともだち', 'せんせい'].includes(target.people)) {
+            const peopleMap: Record<string, string> = {
+              'ひとりで': '一人で',
+              'おかあさん': 'お母さん',
+              'おとうさん': 'お父さん',
+              'おともだち': 'お友達',
+              'せんせい': '先生',
+            };
+            setSelectedPerson(peopleMap[target.people] || target.people);
             setCustomPerson('');
           } else {
             setSelectedPerson('その他');
@@ -152,7 +165,7 @@ function QuestForm() {
     const peopleValue = selectedPerson === 'その他' ? customPerson.trim() : selectedPerson;
 
     if (selectedLocation === 'その他' && !customLocation.trim()) {
-      alert('「場所（どこで）」を入力してください');
+      alert('「場所」を入力してください');
       return;
     }
 
@@ -162,7 +175,7 @@ function QuestForm() {
     }
 
     if (isRecurring && recurrenceDays.length === 0) {
-      alert('繰り返しにする曜日をえらんでね');
+      alert('繰り返しにする曜日を選択してください');
       return;
     }
 
@@ -185,7 +198,7 @@ function QuestForm() {
         recurrenceDays,
       });
 
-      alert('予定を変更したよ！✨');
+      alert('予定を変更しました！✨');
     } else {
       addQuest({
         title,
@@ -208,7 +221,7 @@ function QuestForm() {
         origin: { y: 0.6 }
       });
 
-      alert('予定を登録したよ！地図を確認してみてね 🗺️✨');
+      alert('予定を登録しました！地図を確認してみてください 🗺️✨');
     }
 
     router.push('/route');
@@ -233,13 +246,13 @@ function QuestForm() {
         <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
           <label className="text-xs font-bold text-text-muted flex items-center gap-1.5">
             <Settings className="w-4 h-4 text-quest-routine" />
-            設定された予定からえらぶ（任意）
+            設定済みの予定から選択（任意）
           </label>
           <select
             onChange={handlePresetSelect}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none bg-gray-50 text-sm text-text-main font-bold"
           >
-            <option value="">-- えらばずに自分で入力する --</option>
+            <option value="">-- 選択せずに手動で入力する --</option>
             {presetQuests.map((preset) => (
               <option key={preset.id} value={preset.id}>
                 {preset.title} ({preset.type === 'routine' ? '約束' : preset.type === 'mission' ? 'ミッション' : 'イベント'})
@@ -254,7 +267,7 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <Calendar className="w-4 h-4 text-quest-mission" />
-              日付（ひにち） <span className="text-red-500 font-extrabold text-sm">※</span>
+              日付 <span className="text-red-500 font-extrabold text-sm">※</span>
             </label>
             <input
               type="date"
@@ -286,7 +299,7 @@ function QuestForm() {
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold">🔁 毎週くりかえす</span>
+                <span className="text-sm font-bold">🔁 毎週繰り返す</span>
               </div>
               <div className={`w-10 h-6 rounded-full transition-colors relative ${isRecurring ? 'bg-quest-mission' : 'bg-gray-300'}`}>
                 <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${isRecurring ? 'right-1' : 'left-1'}`} />
@@ -295,7 +308,7 @@ function QuestForm() {
 
             {isRecurring && (
               <div className="mt-3 bg-gray-50 border border-gray-100 p-4 rounded-2xl animate-fade-in space-y-2">
-                <label className="text-[11px] font-bold text-text-muted block">くりかえす曜日（えらんでね）</label>
+                <label className="text-[11px] font-bold text-text-muted block">繰り返す曜日（選択）</label>
                 <div className="grid grid-cols-7 gap-1">
                   {[
                     { val: 1, label: '月' },
@@ -337,13 +350,13 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <Target className="w-4 h-4 text-quest-event" />
-              何をする（よてい） <span className="text-red-500 font-extrabold text-sm">※</span>
+              何をする（予定内容） <span className="text-red-500 font-extrabold text-sm">※</span>
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="例: 公文の宿題、たいそうクラブ"
+              placeholder="例: 公文の宿題、体操クラブ"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text"
               required
             />
@@ -356,7 +369,7 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <Clock className="w-4 h-4 text-gray-400" />
-              時間帯（じかん）
+              時間帯
             </label>
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -369,7 +382,7 @@ function QuestForm() {
                       : 'bg-gray-50 text-text-muted border-gray-100 hover:bg-gray-100'
                   }`}
                 >
-                  ✨ いつでも
+                  ✨ 指定なし
                 </button>
                 <button
                   type="button"
@@ -380,7 +393,7 @@ function QuestForm() {
                       : 'bg-gray-50 text-text-muted border-gray-100 hover:bg-gray-100'
                   }`}
                 >
-                  ⏰ 時間をきめる
+                  ⏰ 時間を指定
                 </button>
               </div>
 
@@ -415,16 +428,16 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <MapPinIcon className="w-4 h-4 text-gray-400" />
-              どこで（場所）
+              場所
             </label>
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: 'おうち', label: '🏠 おうち' },
-                  { value: 'がっこう', label: '🏫 がっこう' },
-                  { value: 'こうえん', label: '🛝 こうえん' },
-                  { value: 'じゅく・ならいごと', label: '✏️ ならいごと' },
-                  { value: 'きょうしつ', label: '🚪 きょうしつ' },
+                  { value: '自宅', label: '🏠 自宅' },
+                  { value: '学校', label: '🏫 学校' },
+                  { value: '公園', label: '🛝 公園' },
+                  { value: '習い事', label: '✏️ 習い事' },
+                  { value: '教室', label: '🚪 教室' },
                   { value: 'その他', label: '📍 その他' }
                 ].map((opt) => (
                   <button
@@ -452,7 +465,7 @@ function QuestForm() {
                   type="text"
                   value={customLocation}
                   onChange={(e) => setCustomLocation(e.target.value)}
-                  placeholder="どこでするか場所を入力してね"
+                  placeholder="実施場所を入力してください"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text animate-fade-in"
                   required
                 />
@@ -464,16 +477,16 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <Users className="w-4 h-4 text-gray-400" />
-              だれと（一緒の人）
+              参加者（誰と）
             </label>
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: 'ひとりで', label: '👤 ひとりで' },
-                  { value: 'おかあさん', label: '👩 おかあさん' },
-                  { value: 'おとうさん', label: '👨 おとうさん' },
-                  { value: 'おともだち', label: '👦 おともだち' },
-                  { value: 'せんせい', label: '🏫 せんせい' },
+                  { value: '一人で', label: '👤 一人で' },
+                  { value: 'お母さん', label: '👩 お母さん' },
+                  { value: 'お父さん', label: '👨 お父さん' },
+                  { value: 'お友達', label: '👦 お友達' },
+                  { value: '先生', label: '🏫 先生' },
                   { value: 'その他', label: '✏️ その他' }
                 ].map((opt) => (
                   <button
@@ -501,7 +514,7 @@ function QuestForm() {
                   type="text"
                   value={customPerson}
                   onChange={(e) => setCustomPerson(e.target.value)}
-                  placeholder="だれと一緒か入力してね"
+                  placeholder="一緒に行う人を入力してください"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text animate-fade-in"
                   required
                 />
@@ -516,13 +529,13 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <FileText className="w-4 h-4 text-quest-mission" />
-              目標（めあて）
+              目標
             </label>
             <input
               type="text"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              placeholder="例: プリントを3まいがんばる"
+              placeholder="例: プリントを3枚頑張る"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text"
             />
           </div>
@@ -537,7 +550,7 @@ function QuestForm() {
               type="text"
               value={promise}
               onChange={(e) => setPromise(e.target.value)}
-              placeholder="例: おわったらペンをかたづける"
+              placeholder="例: 終わったら文房具を片付ける"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text"
               required
             />
@@ -547,13 +560,13 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <Sparkles className="w-4 h-4 text-quest-event" />
-              ごほうび（目標達成のご褒美 - しなくてもよい）
+              ご褒美（目標達成時のご褒美 - 任意）
             </label>
             <input
               type="text"
               value={reward}
               onChange={(e) => setReward(e.target.value)}
-              placeholder="例: おかしを食べる、新しいおもちゃ"
+              placeholder="例: お菓子を食べる、新しいおもちゃ"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text"
             />
           </div>
@@ -590,7 +603,7 @@ function QuestForm() {
           className="w-full bg-quest-routine text-white font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-green-500 flex justify-center items-center gap-2"
         >
           <Save className="w-6 h-6" />
-          <span>{editId ? 'これで設定を変更する！' : 'これで登録する！'}</span>
+          <span>{editId ? '変更を保存する！' : '登録を完了する！'}</span>
         </button>
 
       </form>
@@ -602,7 +615,7 @@ export default function NewQuestChildPage() {
   return (
     <Suspense fallback={
       <div className="flex-1 flex justify-center items-center h-screen bg-background-light">
-        <span className="text-sm font-bold text-text-muted">よみこみちゅう...</span>
+        <span className="text-sm font-bold text-text-muted">読み込み中...</span>
       </div>
     }>
       <QuestForm />

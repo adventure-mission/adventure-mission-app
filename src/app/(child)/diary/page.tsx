@@ -21,7 +21,7 @@ export default function DiaryPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) {
-      alert('なにか書いてみよう！');
+      alert('何か書いてみましょう！');
       return;
     }
 
@@ -39,7 +39,7 @@ export default function DiaryPage() {
       origin: { y: 0.7 }
     });
 
-    alert('日記を保存したよ！自己肯定感アップ✨');
+    alert('日記を保存しました！自己肯定感アップ✨');
     router.push('/route');
   };
 
@@ -59,14 +59,14 @@ export default function DiaryPage() {
           
           {/* 気分選択 */}
           <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
-            <label className="text-sm font-bold text-text-muted block">今日のきぶんは？（えらんでね）</label>
+            <label className="text-sm font-bold text-text-muted block">今日の気分は？（選択してください）</label>
             <div className="grid grid-cols-5 gap-1.5">
               {[
-                { id: 'happy', emoji: '😆', label: 'うれしい！' },
-                { id: 'good', emoji: '🙂', label: 'ふつう' },
-                { id: 'sad', emoji: '😢', label: 'かなしい' },
-                { id: 'angry', emoji: '😡', label: 'ぷんぷん' },
-                { id: 'tired', emoji: '🥱', label: 'つかれた' }
+                { id: 'happy', emoji: '😆', label: '嬉しい！' },
+                { id: 'good', emoji: '🙂', label: '普通' },
+                { id: 'sad', emoji: '😢', label: '悲しい' },
+                { id: 'angry', emoji: '😡', label: '怒り' },
+                { id: 'tired', emoji: '🥱', label: '疲れた' }
               ].map((emo) => (
                 <button
                   key={emo.id}
@@ -93,7 +93,7 @@ export default function DiaryPage() {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="例: 今日は宿題をぜんぶできた！/ 友達と公園で走ったのが楽しかった！"
+              placeholder="例: 今日は宿題を全部できた！/ 友達と公園で走ったのが楽しかった！"
               rows={5}
               className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-yellow-400 text-sm text-text-main resize-none select-text"
             />
@@ -103,8 +103,8 @@ export default function DiaryPage() {
           <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4 flex gap-3 items-start">
             <Heart className="w-5 h-5 text-red-400 fill-red-400 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-yellow-800 leading-relaxed font-medium">
-              できたこと日記を書くと、じぶんの「いいところ」がたくさん見つかるよ！
-              どんな小さなことでも、できたことはぜんぶ大ぼうけんの成功だよ。
+              できたこと日記を書くと、自分の「良いところ」がたくさん見つかります！
+              どんな小さなことでも、できたことは全部大冒険の成功です。
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default function DiaryPage() {
           className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform flex justify-center items-center gap-2"
         >
           <Save className="w-6 h-6" />
-          <span>日記をのこす！</span>
+          <span>日記を保存する！</span>
         </button>
 
       </form>

@@ -43,11 +43,11 @@ export default function AnalyticsPage() {
   };
 
   const emotionLabels: Record<string, string> = {
-    happy: 'うれしい！',
-    good: 'ふつう',
-    sad: 'かなしい',
-    tired: 'つかれた',
-    angry: 'ぷんぷん'
+    happy: '嬉しい！',
+    good: '普通',
+    sad: '悲しい',
+    tired: '疲れた',
+    angry: '怒り'
   };
 
   const emotionEmojis: Record<string, string> = {
@@ -128,11 +128,11 @@ export default function AnalyticsPage() {
 
       <div className="p-6 space-y-6 print:p-0">
         
-        {/* 1. 今週あつめた星の数 (棒グラフ) */}
+        {/* 1. 今週集めた星の数 (棒グラフ) */}
         <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
           <h2 className="text-sm font-bold text-text-muted flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-quest-mission" />
-            今週あつめた星の数
+            今週集めた星の数
           </h2>
 
           <div className="h-44 flex items-end justify-between gap-3 pt-6 border-b border-gray-100 pb-2">
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
         <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
           <h2 className="text-sm font-bold text-text-muted flex items-center gap-1.5">
             <Smile className="w-4 h-4 text-quest-event" />
-            心の状態（きげん）の推移
+            心の状態（機嫌）の推移
           </h2>
 
           {/* SVG 折れ線グラフ */}
@@ -177,11 +177,11 @@ export default function AnalyticsPage() {
             <svg viewBox="0 0 320 150" className="w-full h-auto overflow-visible">
               {/* 背景グリッド線 & ラベル */}
               {[
-                { val: 5, label: '😆', name: 'うれしい' },
-                { val: 4, label: '🙂', name: 'ふつう' },
-                { val: 3, label: '😢', name: 'かなしい' },
-                { val: 2, label: '🥱', name: 'つかれ' },
-                { val: 1, label: '😡', name: 'ぷんぷん' }
+                { val: 5, label: '😆', name: '嬉しい' },
+                { val: 4, label: '🙂', name: '普通' },
+                { val: 3, label: '😢', name: '悲しい' },
+                { val: 2, label: '🥱', name: '疲労' },
+                { val: 1, label: '😡', name: '怒り' }
               ].map((grid) => {
                 const y = 145 - grid.val * 25;
                 return (
@@ -231,8 +231,8 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] font-semibold text-gray-700 leading-relaxed">
-            💡 **きげんの波のポイント**:
-            感情が「つかれ」「ぷんぷん」へ急激に下がっている曜日は、予定が多すぎたり、苦手な予定（宿題や片付けなど）と重なっていないか確認し、早めのサポートに繋げてください。
+            💡 **機嫌の波のポイント**:
+            感情が「疲れた」「怒り」へ急激に下がっている曜日は、予定が多すぎたり、苦手な予定（宿題や片付けなど）と重なっていないか確認し、早めのサポートに繋げてください。
           </div>
         </section>
 
@@ -246,7 +246,7 @@ export default function AnalyticsPage() {
           <div className="space-y-4">
             {diaries.length === 0 ? (
               <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center text-xs font-bold text-text-muted">
-                まだ日記（ふりかえり）が書かれていません。
+                まだ日記（振り返り）が書かれていません。
               </div>
             ) : (
               [...diaries].reverse().map((diary) => (
@@ -273,13 +273,13 @@ export default function AnalyticsPage() {
                   {/* 親からのスタンプやフィードバック */}
                   <div className="flex justify-end gap-2 pt-2 border-t border-gray-50 print:hidden">
                     <button 
-                      onClick={() => alert('はなまるをあげました！💮')}
+                      onClick={() => alert('花丸を贈りました！💮')}
                       className="text-xs font-bold text-quest-mission bg-quest-mission-bg px-3 py-1.5 rounded-full hover:bg-blue-100 active:scale-95 transition-all"
                     >
-                      はなまるをあげる 💮
+                      花丸を贈る 💮
                     </button>
                     <button 
-                      onClick={() => alert('いいね！をおくりました！👍')}
+                      onClick={() => alert('いいね！を送信しました！👍')}
                       className="text-xs font-bold text-quest-routine bg-quest-routine-bg px-3 py-1.5 rounded-full hover:bg-green-100 active:scale-95 transition-all"
                     >
                       いいね！ 👍

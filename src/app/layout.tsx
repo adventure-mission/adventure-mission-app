@@ -3,13 +3,13 @@ import SupabaseSyncProvider from "@/components/SupabaseSyncProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ぼうけんルート - ミッション管理アプリ",
+  title: "冒険ルート - ミッション管理アプリ",
   description: "ASD/ADHDのお子様向け、自己肯定感を高めるためのミッション管理アプリ",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ぼうけんルート",
+    title: "冒険ルート",
   },
 };
 

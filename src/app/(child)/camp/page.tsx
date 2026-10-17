@@ -66,10 +66,10 @@ export default function CampView() {
         {/* メッセージ */}
         <div className="text-center mt-6 max-w-xs">
           <h2 className="text-xl font-bold text-yellow-200 mb-2">
-            今日のぼうけんは おしまい
+            今日の冒険は終了
           </h2>
           <p className="text-sm text-blue-100 leading-relaxed">
-            たき火をかこんで、ゆっくりエネルギーをためよう。明日もすてきなぼうけんが待っているよ。おやすみなさい ⛺⭐
+            焚き火を囲んで、ゆっくりエネルギーを蓄えよう。明日も素敵な冒険が待っているよ。おやすみなさい ⛺⭐
           </p>
         </div>
       </div>
@@ -77,12 +77,12 @@ export default function CampView() {
       {/* 下部：がんばりの肯定 */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center z-10">
         <span className="text-xs text-blue-200 font-semibold block mb-1">
-          今日あつめた星
+          今日集めた星
         </span>
         <div className="flex justify-center items-center gap-1">
           <Star className="w-5 h-5 text-yellow-300 fill-yellow-300 animate-spin duration-[6s]" />
           <span className="text-lg font-bold text-yellow-200">
-            みんなでがんばったよ！
+            皆で頑張ったよ！
           </span>
         </div>
       </div>

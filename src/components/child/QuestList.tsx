@@ -19,7 +19,7 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-3xl">
           📭
         </div>
-        <p className="text-sm font-bold text-text-muted">きょうの予定は ありません。</p>
+        <p className="text-sm font-bold text-text-muted">今日の予定はありません。</p>
         <p className="text-xs text-text-muted mt-1">右下の「＋」ボタンから予定を追加しよう！</p>
       </div>
     );
@@ -53,7 +53,7 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
           emoji = '🌈';
         }
 
-        // おやすみ（スキップ）状態のスタイル
+        // お休み（スキップ）状態のスタイル
         if (status === 'skipped') {
           cardBgClass = 'bg-gray-100 border-gray-200 opacity-60';
           badgeBgClass = 'bg-gray-200 text-gray-500';
@@ -66,7 +66,7 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
             className="flex items-center gap-1.5 px-4 py-2.5 bg-quest-mission text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform hover:bg-blue-500"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            <span>やってみる</span>
+            <span>挑戦する</span>
           </button>
         );
 
@@ -77,20 +77,20 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
               className="flex items-center gap-1.5 px-4 py-2.5 bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-xl animate-pulse active:scale-95 transition-transform"
             >
               <Hourglass className="w-3.5 h-3.5" />
-              <span>確認ちゅう</span>
+              <span>確認中</span>
             </button>
           );
         } else if (status === 'completed') {
           actionButton = (
             <div className="flex items-center gap-1 px-4 py-2.5 bg-yellow-400 text-white text-xs font-bold rounded-xl shadow-inner shadow-yellow-500/30 flex-shrink-0">
               <Check className="w-4 h-4 stroke-[3px]" />
-              <span>できた！</span>
+              <span>達成！</span>
             </div>
           );
         } else if (status === 'skipped') {
           actionButton = (
             <div className="flex items-center gap-1 px-4 py-2.5 bg-gray-300 text-gray-600 text-xs font-bold rounded-xl flex-shrink-0">
-              <span>おやすみ</span>
+              <span>お休み</span>
             </div>
           );
         }
@@ -115,7 +115,7 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
               <div className="space-y-1.5 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full ${badgeBgClass}`}>
-                    {status === 'skipped' ? 'おやすみ' : typeLabel}
+                    {status === 'skipped' ? 'お休み' : typeLabel}
                   </span>
                   
                   {/* 時間バブル */}

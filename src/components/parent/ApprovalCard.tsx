@@ -61,9 +61,9 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
 
       {/* 下部：星の数とアクションボタン群 */}
       <div className="flex justify-between items-center border-t border-gray-50 pt-3 flex-wrap gap-2">
-        {/* あげる星の数 */}
+        {/* 付与する星の数 */}
         <div className="flex items-center gap-1">
-          <span className="text-xs font-semibold text-text-muted">あげる星:</span>
+          <span className="text-xs font-semibold text-text-muted">付与する星:</span>
           <div className="flex items-center gap-0.5">
             {Array.from({ length: Math.min(difficulty, 4) }).map((_, i) => (
               <Star
@@ -79,7 +79,7 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
           </div>
         </div>
 
-        {/* ボタン群（やり直し ＆ 承認する） */}
+        {/* ボタン群（再挑戦 ＆ 承認する） */}
         <div className="flex items-center gap-2">
           {onReject && (
             <button
@@ -88,7 +88,7 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
               title="未完了に戻す"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>やり直し</span>
+              <span>再挑戦</span>
             </button>
           )}
 

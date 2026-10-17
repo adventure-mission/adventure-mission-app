@@ -65,7 +65,7 @@ export default function TaskSlider({ subTasks, onFinish }: TaskSliderProps) {
   if (subTasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center text-gray-500">
-        <p>やることが登録されていません。</p>
+        <p>予定内容が登録されていません。</p>
       </div>
     );
   }
@@ -77,7 +77,7 @@ export default function TaskSlider({ subTasks, onFinish }: TaskSliderProps) {
       {/* 上部：進捗バー（視覚的にわかりやすく） */}
       <div>
         <div className="flex justify-between items-center text-xs text-text-muted font-bold mb-2">
-          <span>ぼうけんの進みぐあい</span>
+          <span>冒険の進み具合</span>
           <span>{currentIndex + 1} / {subTasks.length}</span>
         </div>
         <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
@@ -111,7 +111,7 @@ export default function TaskSlider({ subTasks, onFinish }: TaskSliderProps) {
           </button>
 
           <span className="text-xs text-text-muted mt-4">
-            {completedTasks[currentTask.id] ? 'できたよ！ボタンをもう一度押すと戻るよ' : 'できたら上のボタンを押してね'}
+            {completedTasks[currentTask.id] ? '完了！ボタンをもう一度押すと戻ります' : '完了したら上のボタンを押してください'}
           </span>
         </div>
       </div>
@@ -131,14 +131,14 @@ export default function TaskSlider({ subTasks, onFinish }: TaskSliderProps) {
             onClick={handleSubmit}
             className="flex-1 bg-yellow-400 text-white font-bold py-4 px-6 rounded-full text-lg shadow-md active:scale-95 transition-transform flex justify-center items-center gap-2 hover:bg-yellow-500"
           >
-            できた！を親にほうこくする 🎉
+            達成を親に報告する 🎉
           </button>
         ) : (
           <button
             onClick={handleNext}
             className="flex-1 bg-quest-mission text-white font-bold py-4 px-6 rounded-full text-lg shadow-md active:scale-95 transition-transform flex justify-center items-center gap-2 hover:bg-blue-500"
           >
-            つぎへすすむ
+            次へ進む
             <ChevronRight className="w-6 h-6" />
           </button>
         )}

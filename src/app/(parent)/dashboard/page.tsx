@@ -50,14 +50,14 @@ export default function ParentDashboard() {
 
   // やり直し（未完了に戻す）ハンドラ
   const handleRejectQuest = (questId: string) => {
-    if (!confirm('「未完了（やること）」に戻しますか？')) return;
+    if (!confirm('「未完了」に戻しますか？')) return;
     updateQuestStatus(questId, 'todo');
   };
 
   // 2. ほしいもの交換承認ハンドラ
   const handleApproveWish = (wishId: string, requiredStars: number) => {
     if (childStars < requiredStars) {
-      alert('星が足りません！');
+      alert('星が不足しています！');
       return;
     }
 
@@ -105,7 +105,7 @@ export default function ParentDashboard() {
         if (!confirm(`「${quest.title}」と、今後生成される関連予定をすべて削除しますか？`)) return;
         deleteEntire = true;
       } else {
-        const choice = confirm(`「${quest.title}（${quest.date}）」を削除しますか？\n\n【OK】: この予定を削除する\n【キャンセル】: やめる`);
+        const choice = confirm(`「${quest.title}（${quest.date}）」を削除しますか？\n\n【OK】: この予定を削除する\n【キャンセル】: 中止`);
         if (!choice) return;
         deleteEntire = confirm('すべての曜日の繰り返し予定もまとめて削除しますか？\n\n【OK】: すべて削除\n【キャンセル】: この日の予定だけ削除');
       }
@@ -132,13 +132,13 @@ export default function ParentDashboard() {
           <Link
             href="/route"
             className="p-1.5 -ml-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all"
-            title="ぼうけん地図へもどる"
+            title="冒険地図へ戻る"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6 text-quest-mission" />
-            <h1 className="font-bold text-text-main text-lg">おやダッシュボード</h1>
+            <h1 className="font-bold text-text-main text-lg">親ダッシュボード</h1>
           </div>
         </div>
 
@@ -162,11 +162,11 @@ export default function ParentDashboard() {
               </div>
               <div>
                 <span className="text-2xl font-black text-text-main">{childStars}</span>
-                <span className="text-xs text-text-muted font-bold ml-1">あつめた星</span>
+                <span className="text-xs text-text-muted font-bold ml-1">集めた星</span>
               </div>
             </div>
 
-            {/* おやすみモードスイッチ */}
+            {/* お休みモードスイッチ */}
             <button
               onClick={toggleSleepMode}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-all ${
@@ -176,7 +176,7 @@ export default function ParentDashboard() {
               }`}
             >
               <Moon className={`w-4 h-4 ${isSleepMode ? 'fill-yellow-300' : ''}`} />
-              <span>{isSleepMode ? 'おやすみ中' : 'おやすみにする'}</span>
+              <span>{isSleepMode ? 'お休み中' : 'お休みに設定'}</span>
             </button>
           </div>
         </section>
@@ -186,14 +186,14 @@ export default function ParentDashboard() {
           <div className="flex justify-between items-center px-1">
             <h2 className="text-base font-bold text-text-main flex items-center gap-2">
               <span className="text-lg">⭐</span>
-              <span>しょうにん待ちのぼうけん ({pendingQuests.length})</span>
+              <span>承認待ちの冒険 ({pendingQuests.length})</span>
             </h2>
           </div>
 
           {pendingQuests.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
               <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              現在、しょうにん待ちの予定はありません。<br />
+              現在、承認待ちの予定はありません。<br />
               すべて承認済みです！✨
             </div>
           ) : (
@@ -308,11 +308,11 @@ export default function ParentDashboard() {
           )}
         </section>
 
-        {/* ほしいもの交換申請 */}
+        {/* 欲しいもの交換申請 */}
         <section className="space-y-3">
           <h2 className="text-base font-bold text-text-main flex items-center gap-1.5">
             <Gift className="w-5 h-5 text-red-400" />
-            ほしいもの交換申請 ({wishes.filter((w) => w.status === 'pending_grant').length})
+            欲しいもの交換申請 ({wishes.filter((w) => w.status === 'pending_grant').length})
           </h2>
 
           {wishes.filter((w) => w.status === 'pending_grant').length === 0 ? (

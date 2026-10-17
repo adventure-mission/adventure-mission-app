@@ -14,8 +14,8 @@ export default function AdventureMap({ pins, onPinSelect }: AdventureMapProps) {
     return (
       <div className="flex-1 flex flex-col justify-center items-center p-8 text-center h-[60vh] select-none animate-fade-in">
         <div className="text-6xl mb-4">📭</div>
-        <p className="text-text-muted font-bold text-sm">きょうの予定は登録されていません</p>
-        <p className="text-xs text-text-muted mt-1">下の「予定を設定する」から追加してね！</p>
+        <p className="text-text-muted font-bold text-sm">今日の予定は登録されていません</p>
+        <p className="text-xs text-text-muted mt-1">右下の「＋」ボタンから追加してください！</p>
       </div>
     );
   }
@@ -78,7 +78,7 @@ export default function AdventureMap({ pins, onPinSelect }: AdventureMapProps) {
                 <div className="flex flex-col min-w-[80px]">
                   <span className="text-[9px] font-bold text-text-muted flex items-center gap-1">
                     <Clock className="w-2.5 h-2.5 text-gray-400" />
-                    じかん
+                    時間
                   </span>
                   <span className="text-[11px] font-extrabold text-text-main truncate">
                     {time || 'いつでも'}
