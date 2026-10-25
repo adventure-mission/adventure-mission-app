@@ -29,6 +29,15 @@ const initialPresets: QuestTemplate[] = [
 
 // 初期の登録済み予定（地図に表示されるピン）
 export const initialQuests: RegisteredQuest[] = [
+  // 過去2日分の完了済み履歴（ストリーク初期値: 2日連続）
+  { id: 'q_hist_1', title: '朝食を食べる', type: 'mission', date: getTodayStr(-2), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる' },
+  { id: 'q_hist_2', title: '学校の準備をする', type: 'mission', date: getTodayStr(-2), difficulty: 2, status: 'completed' },
+  { id: 'q_hist_3', title: '歯磨きをする', type: 'mission', date: getTodayStr(-2), difficulty: 1, status: 'completed' },
+  { id: 'q_hist_4', title: '朝食を食べる', type: 'mission', date: getTodayStr(-1), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる' },
+  { id: 'q_hist_5', title: '公文の宿題', type: 'mission', date: getTodayStr(-1), difficulty: 3, status: 'completed' },
+  { id: 'q_hist_6', title: '歯磨きをする', type: 'mission', date: getTodayStr(-1), difficulty: 1, status: 'completed' },
+
+  // 今日の予定
   { id: 'q1', title: '朝食を食べる', type: 'mission', date: getTodayStr(0), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる', promise: '行儀良く食べる' },
   { id: 'q2', title: '学校の準備をする', type: 'mission', date: getTodayStr(0), difficulty: 2, status: 'pending', goal: '教科書と筆箱を入れる', promise: '前日の夜に行う' },
   { id: 'q3', title: '公文の宿題', type: 'mission', date: getTodayStr(0), difficulty: 3, status: 'todo', goal: 'プリントを3枚解く', promise: '片付けをする' },

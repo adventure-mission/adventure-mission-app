@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
-import { ArrowLeft, TrendingUp, BookOpen, Star, Sparkles, Smile, Printer, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, TrendingUp, BookOpen, Star, Sparkles, Smile, Printer, ShieldAlert, Flame } from 'lucide-react';
+import { calculateStreak } from '@/lib/streak';
 
 export default function AnalyticsPage() {
   const router = useRouter();
@@ -89,6 +90,9 @@ export default function AnalyticsPage() {
   const maxStars = Math.max(...dailyData.map((d) => d.starCount), 1);
   const totalStarsThisWeek = dailyData.reduce((sum, d) => sum + d.starCount, 0);
 
+  // 連続達成ストリークの計算
+  const streakInfo = calculateStreak(quests);
+
   // SVG折れ線グラフ用座標計算 (X: 35〜315, Y: 20〜120)
   const svgPoints = dailyData.map((d, index) => {
     const x = 40 + index * 44;
@@ -128,6 +132,37 @@ export default function AnalyticsPage() {
 
       <div className="p-6 space-y-6 print:p-0">
         
+        {/* ストリーク＆週間まとめカード */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200/80 shadow-xs">
+            <span className="text-[11px] font-bold text-orange-600 flex items-center gap-1">
+              <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
+              連続達成ストリーク
+            </span>
+            <div className="text-2xl font-black text-orange-600 mt-1">
+              {streakInfo.currentStreak}
+              <span className="text-xs ml-0.5 font-bold">日連続</span>
+            </div>
+            <span className="text-[10px] text-orange-700/80 font-bold block mt-0.5">
+              最高記録: {streakInfo.longestStreak}日
+            </span>
+          </div>
+
+          <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl p-4 border border-yellow-200/80 shadow-xs">
+            <span className="text-[11px] font-bold text-yellow-700 flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-500" />
+              今週の獲得星
+            </span>
+            <div className="text-2xl font-black text-yellow-600 mt-1">
+              {totalStarsThisWeek}
+              <span className="text-xs ml-0.5 font-bold">個</span>
+            </div>
+            <span className="text-[10px] text-yellow-700/80 font-bold block mt-0.5">
+              今日: {dailyData[dailyData.length - 1]?.starCount ?? 0}個
+            </span>
+          </div>
+        </div>
+
         {/* 1. 今週集めた星の数 (棒グラフ) */}
         <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
           <h2 className="text-sm font-bold text-text-muted flex items-center gap-1.5">

@@ -6,8 +6,9 @@ import { useAppStore } from '@/store/useAppStore';
 import { syncUpdateProfile } from '@/lib/syncService';
 import ApprovalCard from '@/components/parent/ApprovalCard';
 import { type Wish, type RegisteredQuest } from '@/types';
-import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon } from 'lucide-react';
+import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon, Flame } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { calculateStreak } from '@/lib/streak';
 
 // ほしいもの申請中のモックデータ
 const initialWishes: Wish[] = [
@@ -20,6 +21,9 @@ export default function ParentDashboard() {
 
   // 子供のトータル星数
   const childStars = profile?.total_stars ?? 12;
+
+  // 連続達成ストリークの計算
+  const streakInfo = calculateStreak(quests);
 
   // 1. 子供が報告した「確認中（pending）」のクエスト一覧
   const pendingQuests = quests.filter((q) => q.status === 'pending');
@@ -163,6 +167,22 @@ export default function ParentDashboard() {
               <div>
                 <span className="text-2xl font-black text-text-main">{childStars}</span>
                 <span className="text-xs text-text-muted font-bold ml-1">集めた星</span>
+              </div>
+            </div>
+
+            {/* ストリーク表示 */}
+            <div className="flex items-center gap-2.5 bg-orange-50 border border-orange-200/80 px-3.5 py-2 rounded-2xl">
+              <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                <Flame className="w-5 h-5 fill-orange-500 text-orange-500" />
+              </div>
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg font-black text-orange-700">{streakInfo.currentStreak}</span>
+                  <span className="text-xs font-bold text-orange-700">日連続</span>
+                </div>
+                <span className="text-[10px] font-bold text-orange-600 block -mt-0.5">
+                  {streakInfo.isTodayCompleted ? '🎉 今日達成!' : `今日あと${Math.max(0, streakInfo.todayTotalCount - streakInfo.todayPendingOrDoneCount)}件`}
+                </span>
               </div>
             </div>
 

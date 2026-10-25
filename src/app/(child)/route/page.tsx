@@ -6,9 +6,11 @@ import { useAppStore } from '@/store/useAppStore';
 import { useQuestSync } from '@/hooks/useQuestSync';
 import QuestList from '@/components/child/QuestList';
 import { type MapPin } from '@/types';
-import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen, Shield } from 'lucide-react';
+import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen, Shield, Flame, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CampView from '../camp/page'; // おやすみピン画面
+import { calculateStreak } from '@/lib/streak';
+import StreakBadge from '@/components/child/StreakBadge';
 
 export default function RoutePage() {
   const router = useRouter();
@@ -17,6 +19,10 @@ export default function RoutePage() {
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [questsList, setQuestsList] = useState<MapPin[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
+  const [streakToast, setStreakToast] = useState<{ show: boolean; streak: number } | null>(null);
+
+  // 連続達成ストリークの計算
+  const streakInfo = calculateStreak(quests);
 
   // 承認待ち（確認中）の件数
   const pendingCount = quests.filter((q) => q.status === 'pending').length;
@@ -140,13 +146,33 @@ export default function RoutePage() {
         navigator.vibrate([30, 40, 50]);
       }
 
-      // キラキラ紙吹雪演出
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FFCE54', '#48CFAD', '#5D9CEC']
-      });
+      // 今日残っている未完了（todo）予定の数を確認（今回の完了対象を除く）
+      const remainingTodoToday = quests.filter(
+        (q) => q.date === todayStr && !q.isRecurring && q.id !== questId && q.status === 'todo'
+      ).length;
+
+      const isFinishingToday = remainingTodoToday === 0;
+
+      // 演出: 今日最後の予定なら豪華な紙吹雪＆ストリークトースト
+      if (isFinishingToday) {
+        const nextStreak = streakInfo.isTodayCompleted ? streakInfo.currentStreak : streakInfo.currentStreak + 1;
+        confetti({
+          particleCount: 140,
+          spread: 90,
+          origin: { y: 0.5 },
+          colors: ['#FF6B6B', '#FFA500', '#FFD700', '#48CFAD', '#5D9CEC']
+        });
+        setStreakToast({ show: true, streak: nextStreak });
+        setTimeout(() => setStreakToast(null), 4500);
+      } else {
+        // 通常の紙吹雪演出
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#FFCE54', '#48CFAD', '#5D9CEC']
+        });
+      }
 
       // ローカル＆クラウド更新（即座に確認中へ）
       updateLocalQuestStatus(questId, 'pending');
@@ -198,6 +224,9 @@ export default function RoutePage() {
 
         {/* 星の獲得状況 ＆ アイコンボタン（親ダッシュボード・成長グラフ） */}
         <div className="flex items-center gap-2">
+          {/* 連続達成ストリークバッジ */}
+          <StreakBadge streakInfo={streakInfo} />
+
           {/* 親ダッシュボードボタン（アイコンのみ） */}
           <button
             onClick={() => router.push('/dashboard')}
@@ -242,6 +271,26 @@ export default function RoutePage() {
           </div>
         </div>
       </header>
+
+      {/* ストリーク更新のトースト祝賀バナー */}
+      {streakToast?.show && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 text-white p-4 rounded-3xl shadow-2xl shadow-orange-300/60 flex items-center gap-3 animate-in fade-in slide-in-from-top duration-300 border border-orange-200">
+          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+            <Flame className="w-7 h-7 fill-white text-white animate-bounce" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-orange-100 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> 連続記録更新！
+            </div>
+            <div className="text-base font-black tracking-tight">
+              🔥 {streakToast.streak}日連続達成！すごい！
+            </div>
+            <p className="text-[11px] text-orange-100 font-medium">
+              今日の予定をすべてやり切ったね！明日も続けよう！
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* サブヘッダー（今日・明日のタブ切り替え） */}
       <div className="bg-white px-6 py-2 flex border-b border-gray-100 z-10">
