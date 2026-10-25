@@ -77,7 +77,7 @@ export default function TaskSlider({ subTasks, onFinish }: TaskSliderProps) {
       {/* 上部：進捗バー（視覚的にわかりやすく） */}
       <div>
         <div className="flex justify-between items-center text-xs text-text-muted font-bold mb-2">
-          <span>冒険の進み具合</span>
+          <span>進み具合</span>
           <span>{currentIndex + 1} / {subTasks.length}</span>
         </div>
         <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
@@ -131,7 +131,7 @@ export default function TaskSlider({ subTasks, onFinish }: TaskSliderProps) {
             onClick={handleSubmit}
             className="flex-1 bg-yellow-400 text-white font-bold py-4 px-6 rounded-full text-lg shadow-md active:scale-95 transition-transform flex justify-center items-center gap-2 hover:bg-yellow-500"
           >
-            達成を親に報告する 🎉
+            できた！を親に報告する 🎉
           </button>
         ) : (
           <button

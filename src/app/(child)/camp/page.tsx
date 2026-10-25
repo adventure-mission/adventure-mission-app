@@ -66,10 +66,10 @@ export default function CampView() {
         {/* メッセージ */}
         <div className="text-center mt-6 max-w-xs">
           <h2 className="text-xl font-bold text-yellow-200 mb-2">
-            今日の冒険は終了
+            今日の予定はすべて完了！
           </h2>
           <p className="text-sm text-blue-100 leading-relaxed">
-            焚き火を囲んで、ゆっくりエネルギーを蓄えよう。明日も素敵な冒険が待っているよ。おやすみなさい ⛺⭐
+            今日もお疲れさまでした。ゆっくり休んでエネルギーを蓄えよう。明日も素敵な一日にしようね。おやすみなさい ⛺⭐
           </p>
         </div>
       </div>

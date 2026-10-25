@@ -167,7 +167,7 @@ export default function QuestDetailPage() {
           onClick={() => router.push('/route')}
           className="bg-quest-mission text-white px-6 py-2.5 rounded-full font-bold shadow-sm"
         >
-          地図に戻る
+          予定表に戻る
         </button>
       </div>
     );
@@ -200,7 +200,7 @@ export default function QuestDetailPage() {
             className="flex items-center gap-2 text-text-muted hover:text-text-main"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>地図に戻る</span>
+            <span>予定表に戻る</span>
           </button>
           <button
             onClick={handleDelete}
@@ -291,7 +291,7 @@ export default function QuestDetailPage() {
           <div className="pt-2">
             <h3 className="text-xs font-bold text-text-muted mb-3 flex items-center gap-1.5">
               <Compass className="w-4 h-4" />
-              冒険の進行計画
+              やることの確認
             </h3>
             <ul className="space-y-2.5">
               {dynamicSubTasks.map((task, idx) => (
@@ -313,10 +313,10 @@ export default function QuestDetailPage() {
         {quest.status === 'todo' && (
           <button
             onClick={() => setIsPlaying(true)}
-            className="w-full bg-quest-mission text-white font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-blue-500 flex justify-center items-center gap-2"
+            className="w-full bg-quest-mission text-white font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-blue-600 flex justify-center items-center gap-2"
           >
             <CheckCircle2 className="w-6 h-6" />
-            冒険を開始する！
+            できた！を親に報告する 🎉
           </button>
         )}
 
@@ -344,7 +344,7 @@ export default function QuestDetailPage() {
             onClick={() => router.push('/route')}
             className="w-full bg-gray-200 text-gray-700 font-bold py-4 rounded-full text-lg shadow-md active:scale-95 transition-transform hover:bg-gray-300 flex justify-center items-center gap-2"
           >
-            地図に戻る
+            予定表に戻る
           </button>
         )}
 

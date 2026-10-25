@@ -132,7 +132,7 @@ export default function ParentDashboard() {
           <Link
             href="/route"
             className="p-1.5 -ml-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all"
-            title="冒険地図へ戻る"
+            title="予定表へ戻る"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -181,12 +181,12 @@ export default function ParentDashboard() {
           </div>
         </section>
 
-        {/* 承認待ちの冒険（子供が「できた！」と報告した確認中の予定） */}
+        {/* 確認待ちの予定（子供が「できた！」と報告した予定） */}
         <section className="space-y-3">
           <div className="flex justify-between items-center px-1">
             <h2 className="text-base font-bold text-text-main flex items-center gap-2">
               <span className="text-lg">⭐</span>
-              <span>承認待ちの冒険 ({pendingQuests.length})</span>
+              <span>確認待ちの予定 ({pendingQuests.length})</span>
             </h2>
           </div>
 

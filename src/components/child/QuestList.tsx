@@ -8,9 +8,10 @@ import { Play, Check, Hourglass, Star, Gift, Clock, Sparkles, Edit } from 'lucid
 interface QuestListProps {
   pins: MapPin[];
   onPinSelect: (questId: string) => void;
+  onComplete?: (questId: string) => void;
 }
 
-export default function QuestList({ pins, onPinSelect }: QuestListProps) {
+export default function QuestList({ pins, onPinSelect, onComplete }: QuestListProps) {
   const router = useRouter();
 
   if (pins.length === 0) {
@@ -48,23 +49,30 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
         // 2. ステータス別のアクションボタン表示
         let actionButton = (
           <button
-            onClick={() => onPinSelect(questId)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-quest-mission text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform hover:bg-blue-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onComplete) {
+                onComplete(questId);
+              } else {
+                onPinSelect(questId);
+              }
+            }}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-quest-mission text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform hover:bg-blue-600"
+            title="完了して親に報告する"
           >
-            <Play className="w-3.5 h-3.5 fill-current" />
-            <span>挑戦する</span>
+            <Check className="w-4 h-4 stroke-[3px]" />
+            <span>できた！</span>
           </button>
         );
 
         if (status === 'pending') {
           actionButton = (
-            <button
-              onClick={() => onPinSelect(questId)}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-xl animate-pulse active:scale-95 transition-transform"
+            <div
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-xl animate-pulse flex-shrink-0"
             >
               <Hourglass className="w-3.5 h-3.5" />
               <span>確認中</span>
-            </button>
+            </div>
           );
         } else if (status === 'completed') {
           actionButton = (
@@ -84,7 +92,8 @@ export default function QuestList({ pins, onPinSelect }: QuestListProps) {
         return (
           <div
             key={questId}
-            className={`flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border-2 transition-all relative ${cardBgClass}`}
+            onClick={() => onPinSelect(questId)}
+            className={`flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border-2 transition-all relative cursor-pointer hover:shadow-md ${cardBgClass}`}
           >
             {status === 'completed' && (
               <Sparkles className="absolute -top-2 -right-1 w-5 h-5 text-yellow-500 animate-bounce" />

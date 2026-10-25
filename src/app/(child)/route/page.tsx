@@ -7,12 +7,13 @@ import { useQuestSync } from '@/hooks/useQuestSync';
 import QuestList from '@/components/child/QuestList';
 import { type MapPin } from '@/types';
 import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen, Shield } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import CampView from '../camp/page'; // おやすみピン画面
 
 export default function RoutePage() {
   const router = useRouter();
-  const { isOffline } = useQuestSync();
-  const { profile, isSleepMode, setIsSleepMode, quests, generateRecurringInstances } = useAppStore();
+  const { isOffline, updateQuestStatus: syncUpdateQuestStatus } = useQuestSync();
+  const { profile, isSleepMode, setIsSleepMode, quests, generateRecurringInstances, updateQuestStatus: updateLocalQuestStatus } = useAppStore();
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [questsList, setQuestsList] = useState<MapPin[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
@@ -125,8 +126,34 @@ export default function RoutePage() {
   }, [profile?.is_sleep_mode, setIsSleepMode]);
 
   const handlePinSelect = (questId: string) => {
-    // クエスト詳細（中項目の道）画面へ遷移
+    // クエスト詳細画面へ遷移
     router.push(`/quest/${questId}`);
+  };
+
+  // 一覧から「できた！」ワンタップで即時報告
+  const handleComplete = async (questId: string) => {
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      
+      // 心地よいバイブレーション（対応端末のみ）
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([30, 40, 50]);
+      }
+
+      // キラキラ紙吹雪演出
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#FFCE54', '#48CFAD', '#5D9CEC']
+      });
+
+      // ローカル＆クラウド更新（即座に確認中へ）
+      updateLocalQuestStatus(questId, 'pending');
+      await syncUpdateQuestStatus(questId, 'pending', todayStr);
+    } catch (err) {
+      console.error('完了報告エラー:', err);
+    }
   };
 
   // おやすみモード（キャンプ画面）の表示
@@ -147,7 +174,7 @@ export default function RoutePage() {
           </div>
           <div>
             <h1 className="text-sm font-bold text-text-main leading-tight">
-              {profile?.display_name || '礼'} の地図
+              {profile?.display_name || '礼'} の予定表
             </h1>
             <p className="text-[11px] font-bold text-text-muted mt-0.5">
               {getFormattedDate(activeTab)}
@@ -243,7 +270,7 @@ export default function RoutePage() {
       </div>
 
       {/* 予定のポップなリスト表示 */}
-      <QuestList pins={questsList} onPinSelect={handlePinSelect} />
+      <QuestList pins={questsList} onPinSelect={handlePinSelect} onComplete={handleComplete} />
 
       {/* FABメニューの背景（メニューが開いているときだけ画面全体を覆う半透明カバー） */}
       {isFabOpen && (

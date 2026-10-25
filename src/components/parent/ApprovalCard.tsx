@@ -50,7 +50,7 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
           {questTitle}
         </h3>
         <p className="text-xs text-text-muted">
-          冒険者: <span className="font-semibold text-text-main">{childName}</span>
+          名前: <span className="font-semibold text-text-main">{childName}</span>
         </p>
       </div>
 
