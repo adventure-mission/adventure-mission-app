@@ -9,10 +9,14 @@ interface QuestListProps {
   pins: MapPin[];
   onPinSelect: (questId: string) => void;
   onComplete?: (questId: string) => void;
+  onShowAllClear?: () => void;
 }
 
-export default function QuestList({ pins, onPinSelect, onComplete }: QuestListProps) {
+export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClear }: QuestListProps) {
   const router = useRouter();
+
+  // すべての予定が完了（または確認中）しているか
+  const isAllCompleted = pins.length > 0 && pins.every((p) => p.status === 'completed' || p.status === 'pending');
 
   if (pins.length === 0) {
     return (
@@ -28,6 +32,33 @@ export default function QuestList({ pins, onPinSelect, onComplete }: QuestListPr
 
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 space-y-4 bg-background-light h-[calc(100vh-180px)]">
+      {/* 全クリ達成祝賀バナー */}
+      {isAllCompleted && (
+        <div className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 p-4 rounded-3xl text-white shadow-lg shadow-amber-200/50 flex items-center justify-between mb-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-white/20 backdrop-blur-xs rounded-2xl flex items-center justify-center text-2xl shadow-inner shrink-0">
+              👑
+            </div>
+            <div>
+              <span className="text-[11px] font-black text-amber-100 flex items-center gap-1 tracking-wide">
+                <Sparkles className="w-3.5 h-3.5" /> ALL CLEAR!!
+              </span>
+              <h3 className="text-sm font-black tracking-tight text-white">
+                本日の予定をすべて完了！🎉
+              </h3>
+            </div>
+          </div>
+          {onShowAllClear && (
+            <button
+              onClick={onShowAllClear}
+              className="px-3.5 py-2 bg-white text-orange-600 font-extrabold text-xs rounded-xl shadow-md active:scale-95 transition-transform hover:bg-orange-50 shrink-0"
+            >
+              全クリ演出 ✨
+            </button>
+          )}
+        </div>
+      )}
+
       {pins.map((pin, idx) => {
         const { questId, title, status, difficulty, isEventJudgmentDay, bonusStars, time } = pin;
 

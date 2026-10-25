@@ -11,6 +11,7 @@ import confetti from 'canvas-confetti';
 import CampView from '../camp/page'; // おやすみピン画面
 import { calculateStreak } from '@/lib/streak';
 import StreakBadge from '@/components/child/StreakBadge';
+import AllClearModal from '@/components/child/AllClearModal';
 
 export default function RoutePage() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function RoutePage() {
   const [questsList, setQuestsList] = useState<MapPin[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [streakToast, setStreakToast] = useState<{ show: boolean; streak: number } | null>(null);
+  const [showAllClearModal, setShowAllClearModal] = useState(false);
 
   // 連続達成ストリークの計算
   const streakInfo = calculateStreak(quests);
@@ -153,7 +155,7 @@ export default function RoutePage() {
 
       const isFinishingToday = remainingTodoToday === 0;
 
-      // 演出: 今日最後の予定なら豪華な紙吹雪＆ストリークトースト
+      // 演出: 今日最後の予定なら豪華な紙吹雪＆ストリークトースト ＆ 全クリモーダル表示
       if (isFinishingToday) {
         const nextStreak = streakInfo.isTodayCompleted ? streakInfo.currentStreak : streakInfo.currentStreak + 1;
         confetti({
@@ -163,7 +165,12 @@ export default function RoutePage() {
           colors: ['#FF6B6B', '#FFA500', '#FFD700', '#48CFAD', '#5D9CEC']
         });
         setStreakToast({ show: true, streak: nextStreak });
-        setTimeout(() => setStreakToast(null), 4500);
+        setTimeout(() => setStreakToast(null), 4000);
+
+        // 余韻を残して全クリ達成モーダルを大きくポップアップ表示
+        setTimeout(() => {
+          setShowAllClearModal(true);
+        }, 500);
       } else {
         // 通常の紙吹雪演出
         confetti({
@@ -319,7 +326,12 @@ export default function RoutePage() {
       </div>
 
       {/* 予定のポップなリスト表示 */}
-      <QuestList pins={questsList} onPinSelect={handlePinSelect} onComplete={handleComplete} />
+      <QuestList
+        pins={questsList}
+        onPinSelect={handlePinSelect}
+        onComplete={handleComplete}
+        onShowAllClear={() => setShowAllClearModal(true)}
+      />
 
       {/* FABメニューの背景（メニューが開いているときだけ画面全体を覆う半透明カバー） */}
       {isFabOpen && (
@@ -418,6 +430,16 @@ export default function RoutePage() {
       >
         <Plus className="w-8 h-8 stroke-[3px]" />
       </button>
+
+      {/* 全クリ達成祝賀モーダル */}
+      <AllClearModal
+        isOpen={showAllClearModal}
+        onClose={() => setShowAllClearModal(false)}
+        completedCount={todayTotal}
+        earnedStars={todayEarned}
+        streakCount={streakInfo.isTodayCompleted ? streakInfo.currentStreak : streakInfo.currentStreak + 1}
+        userName={profile?.display_name || '礼'}
+      />
     </div>
   );
 }
