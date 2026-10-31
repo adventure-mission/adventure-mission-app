@@ -305,6 +305,27 @@ export default function AnalyticsPage() {
                     {diary.content}
                   </p>
 
+                  {/* タグ情報（どこで・だれと・気持ち） */}
+                  {(diary.location || diary.people || diary.feeling) && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      {diary.location && (
+                        <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                          📍 {diary.location}
+                        </span>
+                      )}
+                      {diary.people && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          👥 {diary.people}
+                        </span>
+                      )}
+                      {diary.feeling && (
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                          💖 {diary.feeling}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* 親からのスタンプやフィードバック */}
                   <div className="flex justify-end gap-2 pt-2 border-t border-gray-50 print:hidden">
                     <button 

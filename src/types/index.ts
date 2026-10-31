@@ -145,5 +145,9 @@ export interface DiaryEntry {
   id: string;
   date: string;       // YYYY-MM-DD
   content: string;    // 日記本文
+  location?: string;  // どこで (家, 学校, 習い事, その他)
+  people?: string;    // だれと (家族, 友達, その他)
+  event?: string;     // 何があった
+  feeling?: string;   // どんな気持ちになった
   emotion: 'happy' | 'good' | 'sad' | 'angry' | 'tired'; // 😆🙂😢😡🥱
 }
