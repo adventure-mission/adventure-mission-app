@@ -29,9 +29,9 @@ export default function ParentDashboard() {
   const pendingQuests = quests.filter((q) => q.status === 'pending');
 
   // クエスト承認ハンドラ
-  const handleApproveQuest = (questId: string, starsToAdd: number) => {
+  const handleApproveQuest = (questId: string, starsToAdd: number, stamp?: string) => {
     // クエストステータスを completed に更新（Supabaseへも自動同期）
-    updateQuestStatus(questId, 'completed');
+    updateQuestStatus(questId, 'completed', stamp);
 
     // 星の加算
     const newTotalStars = (profile?.total_stars ?? 12) + starsToAdd;

@@ -10,9 +10,10 @@ interface QuestListProps {
   onPinSelect: (questId: string) => void;
   onComplete?: (questId: string) => void;
   onShowAllClear?: () => void;
+  onStampClick?: (questId: string) => void;
 }
 
-export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClear }: QuestListProps) {
+export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClear, onStampClick }: QuestListProps) {
   const router = useRouter();
 
   // すべての予定が完了（または確認中）しているか
@@ -60,7 +61,7 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
       )}
 
       {pins.map((pin, idx) => {
-        const { questId, title, status, difficulty, isEventJudgmentDay, bonusStars, time } = pin;
+        const { questId, title, status, difficulty, isEventJudgmentDay, bonusStars, time, stamp } = pin;
 
         // 1. スタイルとアイコン（統一テーマ ＆ 特別な予定のアクセント）
         let cardBgClass = 'bg-white border-gray-100 hover:border-blue-200 shadow-sm';
@@ -158,6 +159,21 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
                     <Clock className="w-3 h-3 text-gray-400" />
                     {time || 'いつでも'}
                   </span>
+
+                  {/* 親からの承認スタンプ */}
+                  {stamp && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStampClick?.(questId);
+                      }}
+                      className="flex items-center gap-1 text-[10px] font-black text-amber-900 bg-amber-100/95 hover:bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-xs active:scale-95 transition-transform"
+                      title="スタンプを見る"
+                    >
+                      {stamp}
+                    </button>
+                  )}
                 </div>
 
                 <h3 className="font-bold text-text-main text-base leading-snug truncate">

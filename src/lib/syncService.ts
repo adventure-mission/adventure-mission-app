@@ -11,7 +11,7 @@ export const questToRow = (q: RegisteredQuest) => ({
   people: q.people ?? null,
   goal: q.goal ?? null,
   promise: q.promise ?? null,
-  reward: q.reward ?? null,
+  reward: q.stamp ? `stamp:${q.stamp}` : (q.reward ?? null),
   difficulty: q.difficulty ?? 1,
   status: q.status ?? 'todo',
   is_recurring: q.isRecurring ?? false,
@@ -21,25 +21,35 @@ export const questToRow = (q: RegisteredQuest) => ({
   bonus_stars: q.bonusStars ?? 0,
 });
 
-export const rowToQuest = (row: any): RegisteredQuest => ({
-  id: row.id,
-  title: row.title,
-  type: row.type,
-  date: row.date,
-  time: row.time ?? undefined,
-  location: row.location ?? undefined,
-  people: row.people ?? undefined,
-  goal: row.goal ?? undefined,
-  promise: row.promise ?? undefined,
-  reward: row.reward ?? undefined,
-  difficulty: Number(row.difficulty) || 1,
-  status: row.status,
-  isRecurring: Boolean(row.is_recurring),
-  recurrenceDays: row.recurrence_days || [],
-  parentRecurringId: row.parent_recurring_id ?? undefined,
-  isEventJudgmentDay: Boolean(row.is_event_judgment_day),
-  bonusStars: Number(row.bonus_stars) || 0,
-});
+export const rowToQuest = (row: any): RegisteredQuest => {
+  let stamp: string | undefined = undefined;
+  let reward: string | undefined = row.reward ?? undefined;
+  if (reward && typeof reward === 'string' && reward.startsWith('stamp:')) {
+    stamp = reward.slice(6);
+    reward = undefined;
+  }
+
+  return {
+    id: row.id,
+    title: row.title,
+    type: row.type,
+    date: row.date,
+    time: row.time ?? undefined,
+    location: row.location ?? undefined,
+    people: row.people ?? undefined,
+    goal: row.goal ?? undefined,
+    promise: row.promise ?? undefined,
+    reward,
+    stamp,
+    difficulty: Number(row.difficulty) || 1,
+    status: row.status,
+    isRecurring: Boolean(row.is_recurring),
+    recurrenceDays: row.recurrence_days || [],
+    parentRecurringId: row.parent_recurring_id ?? undefined,
+    isEventJudgmentDay: Boolean(row.is_event_judgment_day),
+    bonusStars: Number(row.bonus_stars) || 0,
+  };
+};
 
 export const diaryToRow = (d: DiaryEntry) => ({
   id: d.id,
@@ -83,11 +93,15 @@ export async function syncSaveQuestsBulk(quests: RegisteredQuest[]) {
 }
 
 // クエストのステータス更新
-export async function syncUpdateQuestStatus(id: string, status: string) {
+export async function syncUpdateQuestStatus(id: string, status: string, stamp?: string) {
   try {
+    const updateData: any = { status };
+    if (stamp) {
+      updateData.reward = `stamp:${stamp}`;
+    }
     const { error } = await supabase
       .from('shared_quests')
-      .update({ status })
+      .update(updateData)
       .eq('id', id);
     if (error) console.error('Error updating quest status in Supabase:', error);
   } catch (err) {

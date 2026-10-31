@@ -1,7 +1,15 @@
 'use client';
 
-import React from 'react';
-import { Star, CheckCircle, Clock, RotateCcw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, CheckCircle, Clock, RotateCcw, Heart } from 'lucide-react';
+
+export const PRAISE_STAMPS = [
+  '💮 たいへんよくできました',
+  '⚡ スピード達成！',
+  '👍 ナイス！',
+  '❤️ ありがとう！',
+  '👑 パーフェクト！',
+];
 
 export interface ApprovalItem {
   logId: string;
@@ -15,12 +23,13 @@ export interface ApprovalItem {
 
 interface ApprovalCardProps {
   item: ApprovalItem;
-  onApprove: (logId: string, totalStarsEarned: number) => void;
+  onApprove: (logId: string, totalStarsEarned: number, stamp?: string) => void;
   onReject?: (logId: string) => void;
 }
 
 export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCardProps) {
   const { logId, questTitle, childName, difficulty, bonusStars = 0, completedAt, type } = item;
+  const [selectedStamp, setSelectedStamp] = useState<string>('💮 たいへんよくできました');
 
   // 難易度に応じたプレゼント星数 (難易度 1〜4 + ボーナス星)
   const totalStarsEarned = difficulty + bonusStars;
@@ -52,6 +61,32 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
         <p className="text-xs text-text-muted">
           名前: <span className="font-semibold text-text-main">{childName}</span>
         </p>
+      </div>
+
+      {/* スタンプ選択エリア */}
+      <div className="bg-amber-50/60 p-3 rounded-2xl border border-amber-100/80">
+        <span className="text-[11px] font-bold text-amber-900 block mb-2 flex items-center gap-1">
+          <span>💌 一緒に届けるほめ言葉スタンプ:</span>
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {PRAISE_STAMPS.map((stamp) => {
+            const isSelected = selectedStamp === stamp;
+            return (
+              <button
+                key={stamp}
+                type="button"
+                onClick={() => setSelectedStamp(stamp)}
+                className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all active:scale-95 flex items-center gap-1 ${
+                  isSelected
+                    ? 'bg-amber-500 text-white shadow-xs scale-102 ring-2 ring-amber-300'
+                    : 'bg-white text-gray-700 border border-amber-200/60 hover:bg-amber-100/50'
+                }`}
+              >
+                {stamp}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* 下部：星の数とアクションボタン群 */}
@@ -88,11 +123,11 @@ export default function ApprovalCard({ item, onApprove, onReject }: ApprovalCard
           )}
 
           <button
-            onClick={() => onApprove(logId, totalStarsEarned)}
+            onClick={() => onApprove(logId, totalStarsEarned, selectedStamp)}
             className="flex items-center gap-1.5 bg-yellow-400 text-white font-bold px-4 py-2 rounded-full text-xs shadow-sm hover:bg-yellow-500 active:scale-95 transition-all"
           >
             <CheckCircle className="w-4 h-4" />
-            <span>承認する！✨</span>
+            <span>スタンプを押して承認！✨</span>
           </button>
         </div>
       </div>

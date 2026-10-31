@@ -38,7 +38,7 @@ export const initialQuests: RegisteredQuest[] = [
   { id: 'q_hist_6', title: '歯磨きをする', type: 'mission', date: getTodayStr(-1), difficulty: 1, status: 'completed' },
 
   // 今日の予定
-  { id: 'q1', title: '朝食を食べる', type: 'mission', date: getTodayStr(0), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる', promise: '行儀良く食べる' },
+  { id: 'q1', title: '朝食を食べる', type: 'mission', date: getTodayStr(0), difficulty: 1, status: 'completed', goal: 'よく噛んで食べる', promise: '行儀良く食べる', stamp: '💮 たいへんよくできました', stampViewed: true },
   { id: 'q2', title: '学校の準備をする', type: 'mission', date: getTodayStr(0), difficulty: 2, status: 'pending', goal: '教科書と筆箱を入れる', promise: '前日の夜に行う' },
   { id: 'q3', title: '公文の宿題', type: 'mission', date: getTodayStr(0), difficulty: 3, status: 'todo', goal: 'プリントを3枚解く', promise: '片付けをする' },
   { id: 'q4', title: '歯磨きをする', type: 'mission', date: getTodayStr(0), difficulty: 1, status: 'todo', goal: '5分間磨く', promise: '綺麗に磨く' },
@@ -77,7 +77,8 @@ interface AppState {
   // 予定操作アクション
   addQuest: (quest: Omit<RegisteredQuest, 'id' | 'status'>) => void;
   addPresetQuest: (template: QuestTemplate) => void;
-  updateQuestStatus: (id: string, status: QuestStatus) => void;
+  updateQuestStatus: (id: string, status: QuestStatus, stamp?: string) => void;
+  markStampViewed: (id: string) => void;
   generateRecurringInstances: () => void;
   updateQuest: (id: string, updated: Partial<RegisteredQuest>) => void;
   deleteQuest: (id: string, deleteAllRecurring?: boolean) => void;
@@ -162,12 +163,22 @@ export const useAppStore = create<AppState>()(
         presetQuests: [...state.presetQuests, template]
       })),
 
-      updateQuestStatus: (id, status) => {
+      updateQuestStatus: (id, status, stamp) => {
         set((state) => ({
-          quests: state.quests.map((q) => (q.id === id ? { ...q, status } : q))
+          quests: state.quests.map((q) => (
+            q.id === id
+              ? { ...q, status, ...(stamp ? { stamp, stampViewed: false } : {}) }
+              : q
+          ))
         }));
-        syncUpdateQuestStatus(id, status);
+        syncUpdateQuestStatus(id, status, stamp);
       },
+
+      markStampViewed: (id) => set((state) => ({
+        quests: state.quests.map((q) => (
+          q.id === id ? { ...q, stampViewed: true } : q
+        ))
+      })),
 
       generateRecurringInstances: () => set((state) => {
         const recurringMasters = state.quests.filter((q) => q.isRecurring && q.recurrenceDays && q.recurrenceDays.length > 0);

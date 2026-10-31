@@ -100,6 +100,7 @@ export interface MapPin {
   isEventJudgmentDay?: boolean; // イベント判定日の特別フラグ
   judgmentDate?: string;
   bonusStars?: number;
+  stamp?: string;
 }
 
 // 実際にカレンダー・地図に登録された予定の情報
@@ -121,6 +122,8 @@ export interface RegisteredQuest {
   isRecurring?: boolean;       // 繰り返しフラグ
   recurrenceDays?: number[];   // 繰り返し曜日 (0=日, 1=月, ..., 6=土)
   parentRecurringId?: string;  // 生成元の繰り返し予定ID
+  stamp?: string;              // 親からの承認スタンプ (例: 💮 たいへんよくできました)
+  stampViewed?: boolean;       // 子どもがスタンプ確認モーダルを見たかどうか
 }
 
 // 親があらかじめ設定しておく予定のテンプレート

@@ -12,16 +12,19 @@ import CampView from '../camp/page'; // おやすみピン画面
 import { calculateStreak } from '@/lib/streak';
 import StreakBadge from '@/components/child/StreakBadge';
 import AllClearModal from '@/components/child/AllClearModal';
+import StampReceivedModal from '@/components/child/StampReceivedModal';
+import { type RegisteredQuest } from '@/types';
 
 export default function RoutePage() {
   const router = useRouter();
   const { isOffline, updateQuestStatus: syncUpdateQuestStatus } = useQuestSync();
-  const { profile, isSleepMode, setIsSleepMode, quests, generateRecurringInstances, updateQuestStatus: updateLocalQuestStatus } = useAppStore();
+  const { profile, isSleepMode, setIsSleepMode, quests, generateRecurringInstances, updateQuestStatus: updateLocalQuestStatus, markStampViewed } = useAppStore();
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [questsList, setQuestsList] = useState<MapPin[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [streakToast, setStreakToast] = useState<{ show: boolean; streak: number } | null>(null);
   const [showAllClearModal, setShowAllClearModal] = useState(false);
+  const [activeStampQuest, setActiveStampQuest] = useState<RegisteredQuest | null>(null);
 
   // 連続達成ストリークの計算
   const streakInfo = calculateStreak(quests);
@@ -75,7 +78,8 @@ export default function RoutePage() {
         difficulty: q.difficulty,
         isEventJudgmentDay: q.isEventJudgmentDay,
         bonusStars: q.bonusStars,
-        time: q.time
+        time: q.time,
+        stamp: q.stamp,
       }));
 
     // 時間が設定されている予定を優先し、早い時間順にソート（設定なし・「いつでも」は後ろへ）
@@ -132,6 +136,17 @@ export default function RoutePage() {
       setIsSleepMode(false);
     }
   }, [profile?.is_sleep_mode, setIsSleepMode]);
+
+  // 親からの未確認承認スタンプ通知の検知（未読のスタンプがある場合にモーダルを自動ポップアップ）
+  useEffect(() => {
+    if (!mounted) return;
+    const unviewedQuest = quests.find(
+      (q) => q.status === 'completed' && q.stamp && q.stampViewed === false
+    );
+    if (unviewedQuest && !activeStampQuest) {
+      setActiveStampQuest(unviewedQuest);
+    }
+  }, [quests, mounted, activeStampQuest]);
 
   const handlePinSelect = (questId: string) => {
     // クエスト詳細画面へ遷移
@@ -331,6 +346,12 @@ export default function RoutePage() {
         onPinSelect={handlePinSelect}
         onComplete={handleComplete}
         onShowAllClear={() => setShowAllClearModal(true)}
+        onStampClick={(questId) => {
+          const target = quests.find((q) => q.id === questId);
+          if (target) {
+            setActiveStampQuest(target);
+          }
+        }}
       />
 
       {/* FABメニューの背景（メニューが開いているときだけ画面全体を覆う半透明カバー） */}
@@ -440,6 +461,25 @@ export default function RoutePage() {
         streakCount={streakInfo.isTodayCompleted ? streakInfo.currentStreak : streakInfo.currentStreak + 1}
         userName={profile?.display_name || '礼'}
       />
+
+      {/* 親からのスタンプ受け取りモーダル */}
+      {activeStampQuest && (
+        <StampReceivedModal
+          isOpen={Boolean(activeStampQuest)}
+          onClose={() => {
+            if (activeStampQuest) {
+              markStampViewed(activeStampQuest.id);
+              setActiveStampQuest(null);
+            }
+          }}
+          questTitle={activeStampQuest.title}
+          stampText={activeStampQuest.stamp || '💮 たいへんよくできました'}
+          earnedStars={
+            activeStampQuest.difficulty +
+            (activeStampQuest.isEventJudgmentDay ? (activeStampQuest.bonusStars ?? 5) : 0)
+          }
+        />
+      )}
     </div>
   );
 }
