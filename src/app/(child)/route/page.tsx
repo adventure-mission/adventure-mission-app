@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useQuestSync } from '@/hooks/useQuestSync';
 import QuestList from '@/components/child/QuestList';
 import { type MapPin } from '@/types';
-import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen, Shield, Flame, Sparkles } from 'lucide-react';
+import { Moon, Star, Plus, Wifi, WifiOff, Settings, TrendingUp, BookOpen, Shield, Flame, Sparkles, Gift } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CampView from '../camp/page'; // おやすみピン画面
 import { calculateStreak } from '@/lib/streak';
@@ -272,6 +272,15 @@ export default function RoutePage() {
             <TrendingUp className="w-4 h-4 text-purple-600" />
           </button>
 
+          {/* ほしいものリストボタン（アイコンのみ） */}
+          <button
+            onClick={() => router.push('/wishes')}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 active:scale-95 transition-all text-red-500 border border-red-200 shadow-sm"
+            title="ほしいものリストを見る"
+          >
+            <Gift className="w-4 h-4 text-red-500" />
+          </button>
+
           <div className="flex flex-col items-end gap-1.5">
             {/* 今日獲得できる星 */}
             <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-100 px-2.5 py-1 rounded-full">
@@ -388,6 +397,22 @@ export default function RoutePage() {
                   {pendingCount}
                 </span>
               )}
+            </button>
+          </div>
+
+          {/* 0.5. ほしいものリスト */}
+          <div className="flex items-center gap-3">
+            <span className="bg-white border border-gray-100 text-text-main font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
+              ほしいものリスト 🎁
+            </span>
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                router.push('/wishes');
+              }}
+              className="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 hover:bg-red-600"
+            >
+              <Gift className="w-5 h-5" />
             </button>
           </div>
 

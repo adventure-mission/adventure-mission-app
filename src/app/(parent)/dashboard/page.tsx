@@ -10,14 +10,22 @@ import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, C
 import confetti from 'canvas-confetti';
 import { calculateStreak } from '@/lib/streak';
 
-// ほしいもの申請中のモックデータ
-const initialWishes: Wish[] = [
-  { id: 'w1', child_id: 'c1', title: 'ポケモンカード 1パック', category: 'toy', required_stars: 5, status: 'pending_grant', created_at: new Date().toISOString() }
-];
-
 export default function ParentDashboard() {
-  const { profile, setProfile, isSleepMode, setIsSleepMode, quests, updateQuestStatus, deleteQuest } = useAppStore();
-  const [wishes, setWishes] = useState<Wish[]>(initialWishes);
+  const {
+    profile,
+    setProfile,
+    isSleepMode,
+    setIsSleepMode,
+    quests,
+    updateQuestStatus,
+    deleteQuest,
+    wishes,
+    reviewWishStars,
+    grantWish,
+    deleteWish,
+  } = useAppStore();
+
+  const [reviewStarsMap, setReviewStarsMap] = useState<Record<string, number>>({});
 
   // 子供のトータル星数
   const childStars = profile?.total_stars ?? 12;
@@ -27,6 +35,11 @@ export default function ParentDashboard() {
 
   // 1. 子供が報告した「確認中（pending）」のクエスト一覧
   const pendingQuests = quests.filter((q) => q.status === 'pending');
+
+  // ほしいものの各種カウント
+  const pendingWishesReview = wishes.filter((w) => w.status === 'pending_review');
+  const readyWishesGrant = wishes.filter((w) => w.status === 'ready_to_grant');
+  const savingWishes = wishes.filter((w) => w.status === 'saving');
 
   // クエスト承認ハンドラ
   const handleApproveQuest = (questId: string, starsToAdd: number, stamp?: string) => {
@@ -58,31 +71,26 @@ export default function ParentDashboard() {
     updateQuestStatus(questId, 'todo');
   };
 
-  // 2. ほしいもの交換承認ハンドラ
-  const handleApproveWish = (wishId: string, requiredStars: number) => {
-    if (childStars < requiredStars) {
-      alert('星が不足しています！');
-      return;
-    }
+  // 2. ほしいもの星数査定・確定ハンドラ
+  const handleReviewWish = (wishId: string, defaultStars: number) => {
+    const finalStars = reviewStarsMap[wishId] ?? defaultStars;
+    reviewWishStars(wishId, Math.max(1, finalStars));
+    confetti({
+      particleCount: 60,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ['#FFCE54', '#48BB78', '#4D96FF'],
+    });
+  };
 
-    setWishes((prev) =>
-      prev.map((w) => (w.id === wishId ? { ...w, status: 'granted' as const } : w))
-    );
-
-    const newTotalStars = Math.max(0, childStars - requiredStars);
-    if (profile) {
-      setProfile({
-        ...profile,
-        total_stars: newTotalStars
-      });
-    }
-    syncUpdateProfile({ total_stars: newTotalStars });
-
+  // 3. ほしいもの交換完了（プレゼント引き換え）ハンドラ
+  const handleGrantWish = (wishId: string) => {
+    grantWish(wishId);
     confetti({
       particleCount: 120,
       spread: 90,
       origin: { y: 0.5 },
-      colors: ['#FFCE54', '#FF6B6B', '#4D96FF']
+      colors: ['#FF6B6B', '#FFCE54', '#4D96FF', '#48BB78'],
     });
   };
 
@@ -148,7 +156,7 @@ export default function ParentDashboard() {
 
         <button className="p-2 text-text-muted hover:text-text-main relative">
           <Bell className="w-6 h-6" />
-          {(pendingQuests.length > 0 || wishes.some(w => w.status === 'pending_grant')) && (
+          {(pendingQuests.length > 0 || pendingWishesReview.length > 0 || readyWishesGrant.length > 0) && (
             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
           )}
         </button>
@@ -324,49 +332,213 @@ export default function ParentDashboard() {
           )}
         </section>
 
-        {/* 欲しいもの交換申請 */}
-        <section className="space-y-3">
-          <h2 className="text-base font-bold text-text-main flex items-center gap-1.5">
-            <Gift className="w-5 h-5 text-red-400" />
-            欲しいもの交換申請 ({wishes.filter((w) => w.status === 'pending_grant').length})
-          </h2>
+        {/* ほしいものリストの管理・査定・交換承認 */}
+        <section className="space-y-4">
+          <div className="flex justify-between items-center px-1">
+            <h2 className="text-base font-bold text-text-main flex items-center gap-1.5">
+              <Gift className="w-5 h-5 text-red-500" />
+              <span>ほしいものリスト管理 ({wishes.length}件)</span>
+            </h2>
+            <Link
+              href="/wishes"
+              className="text-xs text-blue-600 font-bold hover:underline"
+            >
+              子ども画面で見る →
+            </Link>
+          </div>
 
-          {wishes.filter((w) => w.status === 'pending_grant').length === 0 ? (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
-              現在、交換申請はありません。
+          {/* 1. 星の査定待ちリクエスト (子どもからの希望) */}
+          {pendingWishesReview.length > 0 && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-5 shadow-xs space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black bg-amber-500 text-white px-2.5 py-0.5 rounded-full animate-pulse">
+                  新着申請
+                </span>
+                <h3 className="font-bold text-gray-800 text-sm">
+                  星の数の査定リクエスト ({pendingWishesReview.length}件)
+                </h3>
+              </div>
+              <p className="text-xs text-amber-900/80 font-medium">
+                子どもがほしいものを登録しました！目標とする星の数を決めて承認してあげましょう。
+              </p>
+
+              <div className="space-y-3 pt-1">
+                {pendingWishesReview.map((wish) => {
+                  const currentStars = reviewStarsMap[wish.id] ?? wish.required_stars;
+                  return (
+                    <div
+                      key={wish.id}
+                      className="bg-white rounded-2xl p-4 border border-amber-200/80 shadow-xs space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-base">{wish.title}</h4>
+                          {wish.memo && (
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">💬 {wish.memo}</p>
+                          )}
+                          {wish.estimated_price && (
+                            <span className="text-[11px] font-bold text-gray-400 block mt-0.5">
+                              参考金額: 約{wish.estimated_price.toLocaleString()}円 (子どもの希望: ★{wish.required_stars})
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => deleteWish(wish.id)}
+                          className="text-gray-300 hover:text-red-500 p-1 rounded-lg transition-colors"
+                          title="却下・削除"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* 星の調整スライダー ＆ 決定ボタン */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-600">決定星数:</span>
+                          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setReviewStarsMap((prev) => ({
+                                  ...prev,
+                                  [wish.id]: Math.max(1, currentStars - 5),
+                                }))
+                              }
+                              className="w-6 h-6 rounded-lg bg-white border border-gray-200 font-black text-xs text-gray-600 hover:bg-gray-100 flex items-center justify-center"
+                            >
+                              -5
+                            </button>
+                            <span className="font-black text-sm text-yellow-700 px-2 flex items-center gap-0.5">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-500" />
+                              {currentStars}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setReviewStarsMap((prev) => ({
+                                  ...prev,
+                                  [wish.id]: currentStars + 5,
+                                }))
+                              }
+                              className="w-6 h-6 rounded-lg bg-white border border-gray-200 font-black text-xs text-gray-600 hover:bg-gray-100 flex items-center justify-center"
+                            >
+                              +5
+                            </button>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleReviewWish(wish.id, currentStars)}
+                          className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-1"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>★{currentStars}個で決定して承認！</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {wishes
-                .filter((w) => w.status === 'pending_grant')
-                .map((wish) => (
+          )}
+
+          {/* 2. 目標達成！交換申請中のほしいもの */}
+          {readyWishesGrant.length > 0 && (
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-5 shadow-xs space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black bg-emerald-500 text-white px-2.5 py-0.5 rounded-full animate-bounce">
+                  目標達成！
+                </span>
+                <h3 className="font-bold text-gray-800 text-sm">
+                  プレゼント交換のお願い ({readyWishesGrant.length}件)
+                </h3>
+              </div>
+              <p className="text-xs text-emerald-900/80 font-medium">
+                子どもが必要な星をすべてためきりました！プレゼントを渡して「交換完了」にしてあげましょう。
+              </p>
+
+              <div className="space-y-3 pt-1">
+                {readyWishesGrant.map((wish) => (
                   <div
                     key={wish.id}
-                    className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-4"
+                    className="bg-white rounded-2xl p-4 border border-emerald-200/80 shadow-xs flex items-center justify-between gap-4"
                   >
                     <div>
-                      <h4 className="font-bold text-text-main">{wish.title}</h4>
-                      <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
-                        必要:
-                        <span className="flex items-center font-bold text-yellow-600">
-                          <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-500 mr-0.5" />
-                          {wish.required_stars}個
-                        </span>
-                      </p>
+                      <h4 className="font-bold text-gray-900 text-base flex items-center gap-1.5">
+                        <span>🎁</span>
+                        <span>{wish.title}</span>
+                      </h4>
+                      <div className="flex items-center gap-2 text-xs text-emerald-700 font-bold mt-1">
+                        <span>必要星数をすべて達成 (★{wish.required_stars}個 満タン)</span>
+                      </div>
                     </div>
 
                     <button
-                      onClick={() => handleApproveWish(wish.id, wish.required_stars)}
-                      disabled={childStars < wish.required_stars}
-                      className="bg-quest-routine disabled:bg-gray-200 text-white disabled:text-gray-400 font-bold px-4 py-2.5 rounded-full text-xs shadow-sm hover:bg-green-500 active:scale-95 transition-all flex items-center gap-1"
+                      onClick={() => handleGrantWish(wish.id)}
+                      className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs rounded-2xl shadow-md shadow-emerald-200 active:scale-95 transition-all flex items-center gap-1.5 shrink-0"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>交換を承認する</span>
+                      <Sparkles className="w-4 h-4" />
+                      <span>プレゼント完了（引き換え）！🎁</span>
                     </button>
                   </div>
                 ))}
+              </div>
             </div>
           )}
+
+          {/* 3. 貯金中のほしいもの一覧 */}
+          <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
+            <h3 className="font-bold text-gray-700 text-xs flex items-center justify-between">
+              <span>進行中のほしいもの ({savingWishes.length}件)</span>
+              <span className="text-gray-400 font-medium text-[11px]">子どもが星をためています</span>
+            </h3>
+
+            {savingWishes.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-4">
+                現在貯金中のほしいものはありません。
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {savingWishes.map((wish) => {
+                  const percent = Math.min(100, Math.round((wish.allocated_stars / wish.required_stars) * 100));
+                  return (
+                    <div
+                      key={wish.id}
+                      className="p-3 bg-gray-50/70 border border-gray-100 rounded-2xl flex flex-col gap-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-sm">{wish.title}</h4>
+                          <span className="text-[11px] font-bold text-gray-500 flex items-center gap-1 mt-0.5">
+                            ★ {wish.allocated_stars} / ★ {wish.required_stars} ({percent}%)
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`「${wish.title}」を削除しますか？\n※ 貯金された星(★${wish.allocated_stars})は子どもの手元に返還されます`)) {
+                              deleteWish(wish.id);
+                            }
+                          }}
+                          className="text-gray-300 hover:text-red-500 p-1"
+                          title="削除"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* プログレスバー */}
+                      <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="bg-yellow-400 h-full rounded-full transition-all"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
 
       </div>

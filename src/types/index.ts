@@ -64,7 +64,7 @@ export interface EventMetadata {
 }
 
 export type WishCategory = 'toy' | 'food' | 'place' | 'experience';
-export type WishStatus = 'wishlist' | 'pending_grant' | 'granted';
+export type WishStatus = 'pending_review' | 'saving' | 'ready_to_grant' | 'granted';
 
 export interface Wish {
   id: string;
@@ -72,10 +72,13 @@ export interface Wish {
   title: string;
   category: WishCategory;
   required_stars: number;
+  allocated_stars: number;
   image_url?: string;
-  linked_quest_id?: string;
+  memo?: string;
+  estimated_price?: number;
   status: WishStatus;
   created_at: string;
+  granted_at?: string;
 }
 
 export interface DiaryLog {

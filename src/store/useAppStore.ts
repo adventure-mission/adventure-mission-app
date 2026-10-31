@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { type Profile, type RegisteredQuest, type QuestTemplate, type QuestStatus, type DiaryEntry } from '@/types';
+import { type Profile, type RegisteredQuest, type QuestTemplate, type QuestStatus, type DiaryEntry, type Wish, type WishStatus } from '@/types';
 import {
   syncSaveQuestsBulk,
   syncUpdateQuestStatus,
@@ -50,6 +50,46 @@ export const initialQuests: RegisteredQuest[] = [
   { id: 'q9', title: '歯磨きをする', type: 'mission', date: getTodayStr(1), difficulty: 1, status: 'todo' }
 ];
 
+// 初期のほしいものリスト（クラウドファンディング形式の貯金・交換管理）
+export const initialWishes: Wish[] = [
+  {
+    id: 'w1',
+    child_id: 'default_family',
+    title: 'ポケモンカード 1パック',
+    category: 'toy',
+    required_stars: 20,
+    allocated_stars: 12,
+    memo: '新しい拡張パックを買いたい！',
+    estimated_price: 180,
+    status: 'saving',
+    created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+  },
+  {
+    id: 'w2',
+    child_id: 'default_family',
+    title: 'サーティワンのアイス',
+    category: 'food',
+    required_stars: 35,
+    allocated_stars: 35,
+    memo: 'ポッピングシャワーを食べたい！',
+    estimated_price: 420,
+    status: 'ready_to_grant',
+    created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+  {
+    id: 'w3',
+    child_id: 'default_family',
+    title: '新しいマンガ 1冊',
+    category: 'experience',
+    required_stars: 50,
+    allocated_stars: 0,
+    memo: '欲しい星の数を親に申請中',
+    estimated_price: 550,
+    status: 'pending_review',
+    created_at: new Date().toISOString(),
+  },
+];
+
 interface AppState {
   profile: Profile | null;
   isOffline: boolean;
@@ -61,6 +101,9 @@ interface AppState {
   // クエスト・予定のデータ状態
   quests: RegisteredQuest[];
   presetQuests: QuestTemplate[];
+
+  // ほしいものリスト
+  wishes: Wish[];
 
   // Actions
   setProfile: (profile: Profile | null) => void;
@@ -85,6 +128,15 @@ interface AppState {
   addDiary: (diary: Omit<DiaryEntry, 'id'>) => void;
   resetToDefaults: () => void;
 
+  // ほしいものリスト操作アクション
+  addWish: (wish: Omit<Wish, 'id' | 'child_id' | 'created_at' | 'allocated_stars' | 'status'> & { allocated_stars?: number; status?: WishStatus }) => void;
+  updateWish: (id: string, updated: Partial<Wish>) => void;
+  deleteWish: (id: string) => void;
+  allocateStarsToWish: (wishId: string, amount: number) => boolean;
+  requestWishGrant: (wishId: string) => void;
+  reviewWishStars: (wishId: string, finalStars: number) => void;
+  grantWish: (wishId: string) => void;
+
   // クラウド同期用アクション
   syncFromRemote: (data: { quests?: RegisteredQuest[]; diaries?: DiaryEntry[]; profile?: any }) => void;
 }
@@ -101,6 +153,7 @@ export const useAppStore = create<AppState>()(
       quests: initialQuests,
       presetQuests: initialPresets,
       diaries: [],
+      wishes: initialWishes,
 
       setProfile: (profile) => set({ profile }),
       setIsOffline: (isOffline) => set({ isOffline }),
@@ -300,8 +353,89 @@ export const useAppStore = create<AppState>()(
       resetToDefaults: () => set({
         quests: initialQuests,
         presetQuests: initialPresets,
-        diaries: []
+        diaries: [],
+        wishes: initialWishes,
       }),
+
+      addWish: (wish) => {
+        const newWish: Wish = {
+          ...wish,
+          id: `w_${Date.now()}`,
+          child_id: 'default_family',
+          allocated_stars: wish.allocated_stars ?? 0,
+          status: wish.status ?? 'pending_review',
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          wishes: [newWish, ...state.wishes]
+        }));
+      },
+
+      updateWish: (id, updated) => set((state) => ({
+        wishes: state.wishes.map((w) => (w.id === id ? { ...w, ...updated } : w))
+      })),
+
+      deleteWish: (id) => set((state) => {
+        const target = state.wishes.find((w) => w.id === id);
+        let newProfile = state.profile;
+        if (target && target.allocated_stars > 0 && target.status !== 'granted') {
+          const newTotal = (state.profile?.total_stars ?? 12) + target.allocated_stars;
+          if (newProfile) newProfile = { ...newProfile, total_stars: newTotal };
+          syncUpdateProfile({ total_stars: newTotal });
+        }
+        return {
+          profile: newProfile,
+          wishes: state.wishes.filter((w) => w.id !== id)
+        };
+      }),
+
+      allocateStarsToWish: (wishId, amount) => {
+        let success = false;
+        set((state) => {
+          const wish = state.wishes.find((w) => w.id === wishId);
+          if (!wish) return {};
+          const currentStars = state.profile?.total_stars ?? 12;
+
+          if (amount > 0) {
+            if (currentStars < amount) return {};
+            const newAllocated = wish.allocated_stars + amount;
+            const newTotalStars = currentStars - amount;
+            const newProfile = state.profile ? { ...state.profile, total_stars: newTotalStars } : null;
+            syncUpdateProfile({ total_stars: newTotalStars });
+            success = true;
+            return {
+              profile: newProfile,
+              wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, allocated_stars: newAllocated } : w))
+            };
+          } else if (amount < 0) {
+            const refundAmount = Math.min(wish.allocated_stars, Math.abs(amount));
+            if (refundAmount <= 0) return {};
+            const newAllocated = wish.allocated_stars - refundAmount;
+            const newTotalStars = currentStars + refundAmount;
+            const newProfile = state.profile ? { ...state.profile, total_stars: newTotalStars } : null;
+            syncUpdateProfile({ total_stars: newTotalStars });
+            success = true;
+            return {
+              profile: newProfile,
+              wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, allocated_stars: newAllocated } : w))
+            };
+          }
+          return {};
+        });
+        return success;
+      },
+
+      requestWishGrant: (wishId) => set((state) => ({
+        wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, status: 'ready_to_grant' } : w))
+      })),
+
+      reviewWishStars: (wishId, finalStars) => set((state) => ({
+        wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, required_stars: finalStars, status: 'saving' } : w))
+      })),
+
+      grantWish: (wishId) => set((state) => ({
+        wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, status: 'granted', granted_at: new Date().toISOString() } : w))
+      })),
 
       syncFromRemote: ({ quests, diaries, profile }) => set((state) => {
         const updates: Partial<AppState> = {};
@@ -335,6 +469,7 @@ export const useAppStore = create<AppState>()(
         profile: state.profile,
         isSleepMode: state.isSleepMode,
         diaries: state.diaries,
+        wishes: state.wishes,
       }),
     }
   )
