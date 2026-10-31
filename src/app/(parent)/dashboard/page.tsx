@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { syncUpdateProfile } from '@/lib/syncService';
 import ApprovalCard from '@/components/parent/ApprovalCard';
 import { type Wish, type RegisteredQuest } from '@/types';
-import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon, Flame } from 'lucide-react';
+import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon, Flame, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { calculateStreak } from '@/lib/streak';
 
@@ -128,6 +128,10 @@ export default function ParentDashboard() {
     deleteQuest(quest.id, deleteEntire);
   };
 
+  // 予定一覧のフィルター・展開状態
+  const [questFilter, setQuestFilter] = useState<'upcoming' | 'week' | 'all'>('upcoming');
+  const [showAllQuests, setShowAllQuests] = useState(false);
+
   // 日付順・時間順に並べ替え
   const sortedQuests = [...quests].sort((a, b) => {
     if (a.date !== b.date) return a.date.localeCompare(b.date);
@@ -135,6 +139,28 @@ export default function ParentDashboard() {
     if (!a.time && b.time) return 1;
     return 0;
   });
+
+  // 日付フィルター計算
+  const todayStr = new Date().toISOString().split('T')[0];
+  const tomorrowObj = new Date();
+  tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+  const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
+
+  const weekLaterObj = new Date();
+  weekLaterObj.setDate(weekLaterObj.getDate() + 7);
+  const weekLaterStr = weekLaterObj.toISOString().split('T')[0];
+
+  const upcomingQuests = sortedQuests.filter((q) => q.date === todayStr || q.date === tomorrowStr);
+  const weekQuests = sortedQuests.filter((q) => q.date >= todayStr && q.date <= weekLaterStr);
+
+  const filteredQuests =
+    questFilter === 'upcoming'
+      ? upcomingQuests
+      : questFilter === 'week'
+      ? weekQuests
+      : sortedQuests;
+
+  const displayedQuests = showAllQuests ? filteredQuests : filteredQuests.slice(0, 5);
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background-light pb-16 select-none">
@@ -209,22 +235,65 @@ export default function ParentDashboard() {
           </div>
         </section>
 
-        {/* 確認待ちの予定（子供が「できた！」と報告した予定） */}
-        <section className="space-y-3">
-          <div className="flex justify-between items-center px-1">
-            <h2 className="text-base font-bold text-text-main flex items-center gap-2">
-              <span className="text-lg">⭐</span>
-              <span>確認待ちの予定 ({pendingQuests.length})</span>
-            </h2>
-          </div>
+        {/* ============================================================ */}
+        {/* 1. 【最優先】子どもからのリクエスト・承認ゾーン */}
+        {/* ============================================================ */}
 
-          {pendingQuests.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
-              <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              現在、承認待ちの予定はありません。<br />
-              すべて承認済みです！✨
+        {/* 1-A. 目標達成！プレゼント交換のお願い */}
+        {readyWishesGrant.length > 0 && (
+          <section className="bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border-2 border-emerald-300 rounded-3xl p-5 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black bg-emerald-500 text-white px-2.5 py-0.5 rounded-full animate-bounce shadow-xs">
+                目標達成！
+              </span>
+              <h3 className="font-black text-gray-900 text-base flex items-center gap-1.5">
+                <Gift className="w-5 h-5 text-emerald-600" />
+                <span>プレゼント交換のお願い ({readyWishesGrant.length}件)</span>
+              </h3>
             </div>
-          ) : (
+            <p className="text-xs text-emerald-900 font-medium">
+              子どもが必要な星をすべてためきりました！プレゼントを渡して「交換完了」にしてあげましょう。
+            </p>
+
+            <div className="space-y-3 pt-1">
+              {readyWishesGrant.map((wish) => (
+                <div
+                  key={wish.id}
+                  className="bg-white rounded-2xl p-4 border border-emerald-200 shadow-xs flex items-center justify-between gap-4"
+                >
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-base flex items-center gap-1.5">
+                      <span>🎁</span>
+                      <span>{wish.title}</span>
+                    </h4>
+                    <span className="text-xs text-emerald-700 font-bold block mt-0.5">
+                      ★{wish.required_stars}個 満タン達成！
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => handleGrantWish(wish.id)}
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs rounded-2xl shadow-md shadow-emerald-200 active:scale-95 transition-all flex items-center gap-1.5 shrink-0"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>プレゼント完了（引き換え）！🎁</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 1-B. 確認待ちの予定（子供が「できた！」と報告した予定） */}
+        {pendingQuests.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex justify-between items-center px-1">
+              <h2 className="text-base font-bold text-text-main flex items-center gap-2">
+                <span className="text-lg">⭐</span>
+                <span>確認待ちの予定 ({pendingQuests.length}件)</span>
+              </h2>
+            </div>
+
             <div className="grid grid-cols-1 gap-4">
               {pendingQuests.map((q) => (
                 <ApprovalCard
@@ -243,12 +312,178 @@ export default function ParentDashboard() {
                 />
               ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
 
-        {/* 登録された予定・イベントの管理（削除・追加） */}
-        <section className="space-y-3">
-          <div className="flex justify-between items-center px-1">
+        {/* 1-C. 星の数の査定リクエスト (子どもからの希望) */}
+        {pendingWishesReview.length > 0 && (
+          <section className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-5 shadow-xs space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black bg-amber-500 text-white px-2.5 py-0.5 rounded-full animate-pulse shadow-xs">
+                新着申請
+              </span>
+              <h3 className="font-bold text-gray-800 text-sm">
+                星の数の査定リクエスト ({pendingWishesReview.length}件)
+              </h3>
+            </div>
+            <p className="text-xs text-amber-900/80 font-medium">
+              子どもがほしいものを登録しました！目標とする星の数を決めて承認してあげましょう。
+            </p>
+
+            <div className="space-y-3 pt-1">
+              {pendingWishesReview.map((wish) => {
+                const currentStars = reviewStarsMap[wish.id] ?? wish.required_stars;
+                return (
+                  <div
+                    key={wish.id}
+                    className="bg-white rounded-2xl p-4 border border-amber-200/80 shadow-xs space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-base">{wish.title}</h4>
+                        {wish.memo && (
+                          <p className="text-xs text-gray-500 font-medium mt-0.5">💬 {wish.memo}</p>
+                        )}
+                        {wish.estimated_price && (
+                          <span className="text-[11px] font-bold text-gray-400 block mt-0.5">
+                            参考金額: 約{wish.estimated_price.toLocaleString()}円 (子どもの希望: ★{wish.required_stars})
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => deleteWish(wish.id)}
+                        className="text-gray-300 hover:text-red-500 p-1 rounded-lg transition-colors"
+                        title="却下・削除"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* 星の調整スライダー ＆ 決定ボタン */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-600">決定星数:</span>
+                        <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReviewStarsMap((prev) => ({
+                                ...prev,
+                                [wish.id]: Math.max(1, currentStars - 5),
+                              }))
+                            }
+                            className="w-6 h-6 rounded-lg bg-white border border-gray-200 font-black text-xs text-gray-600 hover:bg-gray-100 flex items-center justify-center"
+                          >
+                            -5
+                          </button>
+                          <span className="font-black text-sm text-yellow-700 px-2 flex items-center gap-0.5">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-500" />
+                            {currentStars}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReviewStarsMap((prev) => ({
+                                ...prev,
+                                [wish.id]: currentStars + 5,
+                              }))
+                            }
+                            className="w-6 h-6 rounded-lg bg-white border border-gray-200 font-black text-xs text-gray-600 hover:bg-gray-100 flex items-center justify-center"
+                          >
+                            +5
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleReviewWish(wish.id, currentStars)}
+                        className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-1"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>★{currentStars}個で決定して承認！</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* 承認待ちが0件の時の完了カード */}
+        {pendingQuests.length === 0 && readyWishesGrant.length === 0 && pendingWishesReview.length === 0 && (
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 text-center text-text-muted text-xs shadow-xs space-y-1">
+            <CheckCircle2 className="w-7 h-7 text-green-500 mx-auto mb-1.5" />
+            <p className="font-bold text-gray-800 text-sm">現在、承認待ち・交換待ちのリクエストはありません ✨</p>
+            <p className="text-[11px] text-gray-400">子どもが予定を達成したり新しいほしいものを登録すると、ここに表示されます。</p>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* 2. ほしいものリスト（貯金中）の進行状況 */}
+        {/* ============================================================ */}
+        {savingWishes.length > 0 && (
+          <section className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                <Gift className="w-4 h-4 text-red-500" />
+                <span>貯金中のほしいもの ({savingWishes.length}件)</span>
+              </h3>
+              <Link
+                href="/wishes"
+                className="text-xs text-blue-600 font-bold hover:underline"
+              >
+                子ども画面で見る →
+              </Link>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              {savingWishes.map((wish) => {
+                const percent = Math.min(100, Math.round((wish.allocated_stars / wish.required_stars) * 100));
+                return (
+                  <div
+                    key={wish.id}
+                    className="p-3 bg-gray-50/70 border border-gray-100 rounded-2xl flex flex-col gap-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-sm">{wish.title}</h4>
+                        <span className="text-[11px] font-bold text-gray-500 flex items-center gap-1 mt-0.5">
+                          ★ {wish.allocated_stars} / ★ {wish.required_stars} ({percent}%)
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`「${wish.title}」を削除しますか？\n※ 貯金された星(★${wish.allocated_stars})は子どもの手元に返還されます`)) {
+                            deleteWish(wish.id);
+                          }
+                        }}
+                        className="text-gray-300 hover:text-red-500 p-1"
+                        title="削除"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* プログレスバー */}
+                    <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-yellow-400 h-full rounded-full transition-all"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ============================================================ */}
+        {/* 3. 予定・イベントの管理（フィルター・折りたたみ付き） */}
+        {/* ============================================================ */}
+        <section className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-base font-bold text-text-main flex items-center gap-2">
               <Calendar className="w-5 h-5 text-quest-mission" />
               <span>予定・イベントの管理 ({sortedQuests.length}件)</span>
@@ -262,19 +497,63 @@ export default function ParentDashboard() {
             </Link>
           </div>
 
-          {sortedQuests.length === 0 ? (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center text-text-muted text-sm shadow-sm">
-              現在、登録されている予定はありません。
+          {/* 期間フィルタータブ */}
+          <div className="flex bg-gray-100 rounded-2xl p-1 gap-1 text-xs">
+            <button
+              onClick={() => {
+                setQuestFilter('upcoming');
+                setShowAllQuests(false);
+              }}
+              className={`flex-1 py-1.5 rounded-xl font-bold transition-all ${
+                questFilter === 'upcoming'
+                  ? 'bg-white text-gray-800 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              今日・明日 ({upcomingQuests.length})
+            </button>
+            <button
+              onClick={() => {
+                setQuestFilter('week');
+                setShowAllQuests(false);
+              }}
+              className={`flex-1 py-1.5 rounded-xl font-bold transition-all ${
+                questFilter === 'week'
+                  ? 'bg-white text-gray-800 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              今週 7日間 ({weekQuests.length})
+            </button>
+            <button
+              onClick={() => {
+                setQuestFilter('all');
+                setShowAllQuests(false);
+              }}
+              className={`flex-1 py-1.5 rounded-xl font-bold transition-all ${
+                questFilter === 'all'
+                  ? 'bg-white text-gray-800 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              すべて ({sortedQuests.length})
+            </button>
+          </div>
+
+          {/* 予定リスト */}
+          {filteredQuests.length === 0 ? (
+            <div className="p-6 text-center text-text-muted text-xs font-bold">
+              この期間に登録されている予定はありません。
             </div>
           ) : (
-            <div className="space-y-3">
-              {sortedQuests.map((q) => (
+            <div className="space-y-2.5">
+              {displayedQuests.map((q) => (
                 <div
                   key={q.id}
-                  className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between gap-3 hover:border-gray-200 transition-all"
+                  className="bg-gray-50/70 rounded-2xl p-3.5 border border-gray-100 flex items-center justify-between gap-3 hover:border-gray-200 transition-all"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                       {(q.isEventJudgmentDay || q.type === 'event') && (
                         <span className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
                           ⭐ 特別 (+{q.bonusStars ?? 5}★)
@@ -302,15 +581,15 @@ export default function ParentDashboard() {
                     
                     <h4 className="font-bold text-text-main text-sm truncate">{q.title}</h4>
                     
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted mt-1">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted mt-0.5">
                       {q.time && (
-                        <span className="flex items-center gap-1 font-medium text-gray-600">
+                        <span className="flex items-center gap-1 font-medium text-gray-500 text-[11px]">
                           <Clock className="w-3 h-3 text-gray-400" />
                           {q.time}
                         </span>
                       )}
                       {q.location && (
-                        <span className="flex items-center gap-1 text-gray-500 truncate max-w-[120px]">
+                        <span className="flex items-center gap-1 text-gray-400 text-[11px] truncate max-w-[120px]">
                           <MapPinIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
                           {q.location}
                         </span>
@@ -321,224 +600,36 @@ export default function ParentDashboard() {
                   {/* 削除ボタン */}
                   <button
                     onClick={() => handleDeleteQuest(q)}
-                    className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95 flex-shrink-0"
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95 flex-shrink-0"
                     title="この予定を削除"
                   >
-                    <Trash2 className="w-5 h-5 text-red-400 hover:text-red-600" />
+                    <Trash2 className="w-4 h-4 text-red-400 hover:text-red-600" />
                   </button>
                 </div>
               ))}
+
+              {/* 5件以上ある場合の開閉トグルボタン */}
+              {filteredQuests.length > 5 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllQuests(!showAllQuests)}
+                  className="w-full py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold rounded-2xl border border-gray-200/80 transition-all flex items-center justify-center gap-1.5 mt-2 active:scale-98"
+                >
+                  {showAllQuests ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      <span>一部のみ表示に戻す</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      <span>残り {filteredQuests.length - 5} 件をすべて表示する</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
-        </section>
-
-        {/* ほしいものリストの管理・査定・交換承認 */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-center px-1">
-            <h2 className="text-base font-bold text-text-main flex items-center gap-1.5">
-              <Gift className="w-5 h-5 text-red-500" />
-              <span>ほしいものリスト管理 ({wishes.length}件)</span>
-            </h2>
-            <Link
-              href="/wishes"
-              className="text-xs text-blue-600 font-bold hover:underline"
-            >
-              子ども画面で見る →
-            </Link>
-          </div>
-
-          {/* 1. 星の査定待ちリクエスト (子どもからの希望) */}
-          {pendingWishesReview.length > 0 && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-5 shadow-xs space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black bg-amber-500 text-white px-2.5 py-0.5 rounded-full animate-pulse">
-                  新着申請
-                </span>
-                <h3 className="font-bold text-gray-800 text-sm">
-                  星の数の査定リクエスト ({pendingWishesReview.length}件)
-                </h3>
-              </div>
-              <p className="text-xs text-amber-900/80 font-medium">
-                子どもがほしいものを登録しました！目標とする星の数を決めて承認してあげましょう。
-              </p>
-
-              <div className="space-y-3 pt-1">
-                {pendingWishesReview.map((wish) => {
-                  const currentStars = reviewStarsMap[wish.id] ?? wish.required_stars;
-                  return (
-                    <div
-                      key={wish.id}
-                      className="bg-white rounded-2xl p-4 border border-amber-200/80 shadow-xs space-y-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h4 className="font-bold text-gray-900 text-base">{wish.title}</h4>
-                          {wish.memo && (
-                            <p className="text-xs text-gray-500 font-medium mt-0.5">💬 {wish.memo}</p>
-                          )}
-                          {wish.estimated_price && (
-                            <span className="text-[11px] font-bold text-gray-400 block mt-0.5">
-                              参考金額: 約{wish.estimated_price.toLocaleString()}円 (子どもの希望: ★{wish.required_stars})
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => deleteWish(wish.id)}
-                          className="text-gray-300 hover:text-red-500 p-1 rounded-lg transition-colors"
-                          title="却下・削除"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* 星の調整スライダー ＆ 決定ボタン */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-gray-600">決定星数:</span>
-                          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setReviewStarsMap((prev) => ({
-                                  ...prev,
-                                  [wish.id]: Math.max(1, currentStars - 5),
-                                }))
-                              }
-                              className="w-6 h-6 rounded-lg bg-white border border-gray-200 font-black text-xs text-gray-600 hover:bg-gray-100 flex items-center justify-center"
-                            >
-                              -5
-                            </button>
-                            <span className="font-black text-sm text-yellow-700 px-2 flex items-center gap-0.5">
-                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-500" />
-                              {currentStars}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setReviewStarsMap((prev) => ({
-                                  ...prev,
-                                  [wish.id]: currentStars + 5,
-                                }))
-                              }
-                              className="w-6 h-6 rounded-lg bg-white border border-gray-200 font-black text-xs text-gray-600 hover:bg-gray-100 flex items-center justify-center"
-                            >
-                              +5
-                            </button>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleReviewWish(wish.id, currentStars)}
-                          className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-1"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>★{currentStars}個で決定して承認！</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* 2. 目標達成！交換申請中のほしいもの */}
-          {readyWishesGrant.length > 0 && (
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-5 shadow-xs space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black bg-emerald-500 text-white px-2.5 py-0.5 rounded-full animate-bounce">
-                  目標達成！
-                </span>
-                <h3 className="font-bold text-gray-800 text-sm">
-                  プレゼント交換のお願い ({readyWishesGrant.length}件)
-                </h3>
-              </div>
-              <p className="text-xs text-emerald-900/80 font-medium">
-                子どもが必要な星をすべてためきりました！プレゼントを渡して「交換完了」にしてあげましょう。
-              </p>
-
-              <div className="space-y-3 pt-1">
-                {readyWishesGrant.map((wish) => (
-                  <div
-                    key={wish.id}
-                    className="bg-white rounded-2xl p-4 border border-emerald-200/80 shadow-xs flex items-center justify-between gap-4"
-                  >
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-base flex items-center gap-1.5">
-                        <span>🎁</span>
-                        <span>{wish.title}</span>
-                      </h4>
-                      <div className="flex items-center gap-2 text-xs text-emerald-700 font-bold mt-1">
-                        <span>必要星数をすべて達成 (★{wish.required_stars}個 満タン)</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleGrantWish(wish.id)}
-                      className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs rounded-2xl shadow-md shadow-emerald-200 active:scale-95 transition-all flex items-center gap-1.5 shrink-0"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      <span>プレゼント完了（引き換え）！🎁</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 3. 貯金中のほしいもの一覧 */}
-          <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
-            <h3 className="font-bold text-gray-700 text-xs flex items-center justify-between">
-              <span>進行中のほしいもの ({savingWishes.length}件)</span>
-              <span className="text-gray-400 font-medium text-[11px]">子どもが星をためています</span>
-            </h3>
-
-            {savingWishes.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-4">
-                現在貯金中のほしいものはありません。
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {savingWishes.map((wish) => {
-                  const percent = Math.min(100, Math.round((wish.allocated_stars / wish.required_stars) * 100));
-                  return (
-                    <div
-                      key={wish.id}
-                      className="p-3 bg-gray-50/70 border border-gray-100 rounded-2xl flex flex-col gap-2"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-bold text-gray-800 text-sm">{wish.title}</h4>
-                          <span className="text-[11px] font-bold text-gray-500 flex items-center gap-1 mt-0.5">
-                            ★ {wish.allocated_stars} / ★ {wish.required_stars} ({percent}%)
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (confirm(`「${wish.title}」を削除しますか？\n※ 貯金された星(★${wish.allocated_stars})は子どもの手元に返還されます`)) {
-                              deleteWish(wish.id);
-                            }
-                          }}
-                          className="text-gray-300 hover:text-red-500 p-1"
-                          title="削除"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* プログレスバー */}
-                      <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="bg-yellow-400 h-full rounded-full transition-all"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </section>
 
       </div>
