@@ -8,6 +8,7 @@ export interface Profile {
   total_stars: number;
   parent_id?: string;
   is_sleep_mode: boolean;
+  last_all_clear_bonus_date?: string; // 全クリボーナス（+1⭐）を最後に付与した日
   created_at: string;
 }
 

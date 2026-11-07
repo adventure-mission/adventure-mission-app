@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { syncUpdateProfile } from '@/lib/syncService';
 import ApprovalCard from '@/components/parent/ApprovalCard';
 import { type Wish, type RegisteredQuest } from '@/types';
-import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon, Flame, ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon, Flame, ChevronDown, ChevronUp, Filter, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { calculateStreak } from '@/lib/streak';
 
@@ -232,6 +232,17 @@ export default function ParentDashboard() {
               <Moon className={`w-4 h-4 ${isSleepMode ? 'fill-yellow-300' : ''}`} />
               <span>{isSleepMode ? 'お休み中' : 'お休みに設定'}</span>
             </button>
+          </div>
+
+          {/* 成長ダッシュボードへのリンク */}
+          <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">
+            <Link
+              href="/analytics"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-quest-mission font-bold text-xs rounded-xl transition-all active:scale-95"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>成長グラフ・日記を見る 📈</span>
+            </Link>
           </div>
         </section>
 

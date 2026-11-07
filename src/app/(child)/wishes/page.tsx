@@ -45,7 +45,8 @@ export default function WishesPage() {
 
   // モーダル管理
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [chargeWish, setChargeWish] = useState<Wish | null>(null);
+  const [chargeWishId, setChargeWishId] = useState<string | null>(null);
+  const chargeWish = wishes.find((w) => w.id === chargeWishId) || null;
 
   // 新規登録フォーム状態
   const [title, setTitle] = useState('');
@@ -109,11 +110,6 @@ export default function WishesPage() {
           origin: { y: 0.7 },
           colors: ['#FFD700', '#FFA500'],
         });
-      }
-      // 最新のwishオブジェクトでモーダル内状態も更新
-      const updated = wishes.find((w) => w.id === chargeWish.id);
-      if (updated) {
-        setChargeWish(updated);
       }
     }
   };
@@ -346,7 +342,7 @@ export default function WishesPage() {
                     {/* 貯金中：星チャージボタン */}
                     {wish.status === 'saving' && !isFull && (
                       <button
-                        onClick={() => setChargeWish(wish)}
+                        onClick={() => setChargeWishId(wish.id)}
                         className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-500 hover:to-amber-500 text-white font-black text-xs rounded-full shadow-sm active:scale-95 transition-all"
                       >
                         <Star className="w-3.5 h-3.5 fill-white" />
@@ -384,14 +380,14 @@ export default function WishesPage() {
       {chargeWish && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150"
-          onClick={() => setChargeWish(null)}
+          onClick={() => setChargeWishId(null)}
         >
           <div
             className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-yellow-200 relative text-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={() => setChargeWish(null)}
+              onClick={() => setChargeWishId(null)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
@@ -477,7 +473,7 @@ export default function WishesPage() {
             )}
 
             <button
-              onClick={() => setChargeWish(null)}
+              onClick={() => setChargeWishId(null)}
               className="w-full mt-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-colors"
             >
               とじる

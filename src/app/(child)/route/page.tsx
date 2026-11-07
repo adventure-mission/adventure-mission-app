@@ -18,7 +18,7 @@ import { type RegisteredQuest } from '@/types';
 export default function RoutePage() {
   const router = useRouter();
   const { isOffline, updateQuestStatus: syncUpdateQuestStatus } = useQuestSync();
-  const { profile, isSleepMode, setIsSleepMode, quests, generateRecurringInstances, updateQuestStatus: updateLocalQuestStatus, markStampViewed } = useAppStore();
+  const { profile, isSleepMode, setIsSleepMode, quests, generateRecurringInstances, updateQuestStatus: updateLocalQuestStatus, markStampViewed, awardAllClearBonus } = useAppStore();
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [questsList, setQuestsList] = useState<MapPin[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
@@ -170,8 +170,9 @@ export default function RoutePage() {
 
       const isFinishingToday = remainingTodoToday === 0;
 
-      // 演出: 今日最後の予定なら豪華な紙吹雪＆ストリークトースト ＆ 全クリモーダル表示
+      // 演出: 今日最後の予定なら豪華な紙吹雪＆ストリークトースト ＆ 全クリモーダル表示 ＆ 全クリボーナス付与
       if (isFinishingToday) {
+        awardAllClearBonus(todayStr);
         const nextStreak = streakInfo.isTodayCompleted ? streakInfo.currentStreak : streakInfo.currentStreak + 1;
         confetti({
           particleCount: 140,
@@ -354,7 +355,11 @@ export default function RoutePage() {
         pins={questsList}
         onPinSelect={handlePinSelect}
         onComplete={handleComplete}
-        onShowAllClear={() => setShowAllClearModal(true)}
+        onShowAllClear={() => {
+          const todayStr = new Date().toISOString().split('T')[0];
+          awardAllClearBonus(todayStr);
+          setShowAllClearModal(true);
+        }}
         onStampClick={(questId) => {
           const target = quests.find((q) => q.id === questId);
           if (target) {

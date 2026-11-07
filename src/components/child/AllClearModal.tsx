@@ -12,6 +12,7 @@ interface AllClearModalProps {
   earnedStars: number;
   streakCount: number;
   userName?: string;
+  hasBonus?: boolean;
 }
 
 export default function AllClearModal({
@@ -21,6 +22,7 @@ export default function AllClearModal({
   earnedStars,
   streakCount,
   userName = '礼',
+  hasBonus = true,
 }: AllClearModalProps) {
   const router = useRouter();
 
@@ -99,6 +101,29 @@ export default function AllClearModal({
             {userName}さん、今日もお疲れさまでした！
           </p>
         </div>
+
+        {/* 全クリボーナス特別バナー */}
+        {hasBonus && (
+          <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 p-3 rounded-2xl border-2 border-yellow-200 shadow-md shadow-yellow-200/50 mt-4 mb-2 flex items-center justify-between text-left">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-white/95 text-yellow-600 flex items-center justify-center font-black text-lg shadow-inner shrink-0">
+                🎁
+              </div>
+              <div>
+                <span className="text-[10px] font-black text-amber-900 tracking-wider block">
+                  全クリ達成ボーナス！
+                </span>
+                <h4 className="text-xs font-black text-amber-950">
+                  星を 1ポイント プレゼント！
+                </h4>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 bg-white px-2.5 py-1 rounded-full shadow-xs border border-yellow-300">
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-500" />
+              <span className="text-sm font-black text-yellow-800">+1★</span>
+            </div>
+          </div>
+        )}
 
         {/* 実績サマリーカード */}
         <div className="grid grid-cols-3 gap-2 my-5 relative">

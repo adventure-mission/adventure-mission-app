@@ -137,6 +137,9 @@ interface AppState {
   reviewWishStars: (wishId: string, finalStars: number) => void;
   grantWish: (wishId: string) => void;
 
+  // 全クリボーナス付与アクション
+  awardAllClearBonus: (dateStr: string) => boolean;
+
   // クラウド同期用アクション
   syncFromRemote: (data: { quests?: RegisteredQuest[]; diaries?: DiaryEntry[]; profile?: any }) => void;
 }
@@ -377,10 +380,18 @@ export const useAppStore = create<AppState>()(
 
       deleteWish: (id) => set((state) => {
         const target = state.wishes.find((w) => w.id === id);
-        let newProfile = state.profile;
+        const defaultProfile: Profile = {
+          id: 'child_1',
+          role: 'child',
+          display_name: '礼',
+          total_stars: 12,
+          is_sleep_mode: false,
+          created_at: new Date().toISOString(),
+        };
+        let newProfile = state.profile || defaultProfile;
         if (target && target.allocated_stars > 0 && target.status !== 'granted') {
-          const newTotal = (state.profile?.total_stars ?? 12) + target.allocated_stars;
-          if (newProfile) newProfile = { ...newProfile, total_stars: newTotal };
+          const newTotal = newProfile.total_stars + target.allocated_stars;
+          newProfile = { ...newProfile, total_stars: newTotal };
           syncUpdateProfile({ total_stars: newTotal });
         }
         return {
@@ -394,13 +405,29 @@ export const useAppStore = create<AppState>()(
         set((state) => {
           const wish = state.wishes.find((w) => w.id === wishId);
           if (!wish) return {};
-          const currentStars = state.profile?.total_stars ?? 12;
+
+          const defaultProfile: Profile = {
+            id: 'child_1',
+            role: 'child',
+            display_name: '礼',
+            total_stars: 12,
+            is_sleep_mode: false,
+            created_at: new Date().toISOString(),
+          };
+          const baseProfile = state.profile || defaultProfile;
+          const currentStars = baseProfile.total_stars;
 
           if (amount > 0) {
+            // 手持ち星以上のチャージは不可
             if (currentStars < amount) return {};
-            const newAllocated = wish.allocated_stars + amount;
-            const newTotalStars = currentStars - amount;
-            const newProfile = state.profile ? { ...state.profile, total_stars: newTotalStars } : null;
+            // 必要星数を超えるチャージは自動で目標値までに制限
+            const maxNeeded = Math.max(0, wish.required_stars - wish.allocated_stars);
+            const actualAdd = Math.min(amount, maxNeeded);
+            if (actualAdd <= 0) return {};
+
+            const newAllocated = wish.allocated_stars + actualAdd;
+            const newTotalStars = currentStars - actualAdd;
+            const newProfile = { ...baseProfile, total_stars: newTotalStars };
             syncUpdateProfile({ total_stars: newTotalStars });
             success = true;
             return {
@@ -408,11 +435,12 @@ export const useAppStore = create<AppState>()(
               wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, allocated_stars: newAllocated } : w))
             };
           } else if (amount < 0) {
+            // 貯金されている星以上は戻せない
             const refundAmount = Math.min(wish.allocated_stars, Math.abs(amount));
             if (refundAmount <= 0) return {};
             const newAllocated = wish.allocated_stars - refundAmount;
             const newTotalStars = currentStars + refundAmount;
-            const newProfile = state.profile ? { ...state.profile, total_stars: newTotalStars } : null;
+            const newProfile = { ...baseProfile, total_stars: newTotalStars };
             syncUpdateProfile({ total_stars: newTotalStars });
             success = true;
             return {
@@ -436,6 +464,37 @@ export const useAppStore = create<AppState>()(
       grantWish: (wishId) => set((state) => ({
         wishes: state.wishes.map((w) => (w.id === wishId ? { ...w, status: 'granted', granted_at: new Date().toISOString() } : w))
       })),
+
+      awardAllClearBonus: (dateStr) => {
+        let awarded = false;
+        set((state) => {
+          const defaultProfile: Profile = {
+            id: 'child_1',
+            role: 'child',
+            display_name: '礼',
+            total_stars: 12,
+            is_sleep_mode: false,
+            created_at: new Date().toISOString(),
+          };
+          const baseProfile = state.profile || defaultProfile;
+
+          // すでにその日のボーナスが付与済みなら二重付与しない
+          if (baseProfile.last_all_clear_bonus_date === dateStr) {
+            return {};
+          }
+
+          const newTotalStars = baseProfile.total_stars + 1;
+          const newProfile: Profile = {
+            ...baseProfile,
+            total_stars: newTotalStars,
+            last_all_clear_bonus_date: dateStr,
+          };
+          syncUpdateProfile({ total_stars: newTotalStars });
+          awarded = true;
+          return { profile: newProfile };
+        });
+        return awarded;
+      },
 
       syncFromRemote: ({ quests, diaries, profile }) => set((state) => {
         const updates: Partial<AppState> = {};
