@@ -157,10 +157,6 @@ function QuestForm() {
       alert('「何をする」を入力してください');
       return;
     }
-    if (!promise.trim()) {
-      alert('「約束」を入力してください');
-      return;
-    }
 
     // 時間帯、場所、だれとの設定値を取得
     const timeValue = isTimeRangeActive ? `${startTime}時から${endTime}時まで` : undefined;
@@ -590,7 +586,7 @@ function QuestForm() {
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
               <CheckSquare className="w-4 h-4 text-quest-routine" />
-              約束（ルール） <span className="text-red-500 font-extrabold text-sm">※</span>
+              約束（ルール・任意）
             </label>
             <input
               type="text"
@@ -598,7 +594,6 @@ function QuestForm() {
               onChange={(e) => setPromise(e.target.value)}
               placeholder="例: 終わったら文房具を片付ける"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-semibold text-text-main select-text"
-              required
             />
           </div>
 
