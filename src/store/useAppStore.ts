@@ -530,6 +530,27 @@ export const useAppStore = create<AppState>()(
         diaries: state.diaries,
         wishes: state.wishes,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (!state || !state.wishes) return;
+        // 多色鉛筆の星補填マイグレーション (消えた星19個を補填して40にする)
+        let modified = false;
+        const updatedWishes = state.wishes.map((w) => {
+          if (w.title.includes('多色鉛筆') && w.allocated_stars < 40) {
+            modified = true;
+            const newAllocated = 40;
+            const isFull = newAllocated >= w.required_stars;
+            return {
+              ...w,
+              allocated_stars: newAllocated,
+              status: isFull ? ('ready_to_grant' as const) : w.status,
+            };
+          }
+          return w;
+        });
+        if (modified) {
+          state.wishes = updatedWishes;
+        }
+      },
     }
   )
 );

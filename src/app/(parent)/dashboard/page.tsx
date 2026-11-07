@@ -20,10 +20,23 @@ export default function ParentDashboard() {
     updateQuestStatus,
     deleteQuest,
     wishes,
+    updateWish,
     reviewWishStars,
     grantWish,
     deleteWish,
   } = useAppStore();
+
+  // 多色鉛筆の星補填（消えてしまった星19個を補填し40個にする）
+  React.useEffect(() => {
+    const target = wishes.find((w) => w.title.includes('多色鉛筆') && w.allocated_stars < 40);
+    if (target) {
+      const isFull = 40 >= target.required_stars;
+      updateWish(target.id, {
+        allocated_stars: 40,
+        status: isFull ? 'ready_to_grant' : target.status,
+      });
+    }
+  }, [wishes, updateWish]);
 
   const [reviewStarsMap, setReviewStarsMap] = useState<Record<string, number>>({});
 
@@ -482,6 +495,53 @@ export default function ParentDashboard() {
                         className="bg-yellow-400 h-full rounded-full transition-all"
                         style={{ width: `${percent}%` }}
                       />
+                    </div>
+
+                    {/* 親用の星補填・調整コントロール */}
+                    <div className="flex items-center gap-1.5 pt-1 text-[11px] border-t border-gray-100">
+                      <span className="text-gray-400 font-bold text-[10px]">親用・星の調整:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextVal = wish.allocated_stars + 1;
+                          updateWish(wish.id, {
+                            allocated_stars: nextVal,
+                            status: nextVal >= wish.required_stars ? 'ready_to_grant' : wish.status,
+                          });
+                        }}
+                        className="px-2 py-0.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-[10px] font-black rounded-md transition-colors"
+                      >
+                        +1★
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextVal = wish.allocated_stars + 10;
+                          updateWish(wish.id, {
+                            allocated_stars: nextVal,
+                            status: nextVal >= wish.required_stars ? 'ready_to_grant' : wish.status,
+                          });
+                        }}
+                        className="px-2 py-0.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-[10px] font-black rounded-md transition-colors"
+                      >
+                        +10★
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const val = prompt(`「${wish.title}」のたまった星の数を入力してください`, String(wish.allocated_stars));
+                          if (val !== null) {
+                            const num = Math.max(0, parseInt(val, 10) || 0);
+                            updateWish(wish.id, {
+                              allocated_stars: num,
+                              status: num >= wish.required_stars ? 'ready_to_grant' : wish.status,
+                            });
+                          }
+                        }}
+                        className="px-2 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold rounded-md ml-auto transition-colors"
+                      >
+                        ✏️ 星の数を直接変更
+                      </button>
                     </div>
                   </div>
                 );

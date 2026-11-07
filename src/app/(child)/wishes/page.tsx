@@ -33,10 +33,23 @@ export default function WishesPage() {
     profile,
     wishes,
     addWish,
+    updateWish,
     allocateStarsToWish,
     requestWishGrant,
     deleteWish,
   } = useAppStore();
+
+  // 多色鉛筆の星補填（消えてしまった星19個を補填し40個にする）
+  React.useEffect(() => {
+    const target = wishes.find((w) => w.title.includes('多色鉛筆') && w.allocated_stars < 40);
+    if (target) {
+      const isFull = 40 >= target.required_stars;
+      updateWish(target.id, {
+        allocated_stars: 40,
+        status: isFull ? 'ready_to_grant' : target.status,
+      });
+    }
+  }, [wishes, updateWish]);
 
   const childStars = profile?.total_stars ?? 12;
 
