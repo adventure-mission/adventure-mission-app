@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { ArrowLeft, Save, Heart, Sparkles, MapPin, Users, HelpCircle, Smile, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import DiaryCalendar from '@/components/common/DiaryCalendar';
 
 const LOCATION_OPTIONS = [
   { id: '家', label: '家', emoji: '🏠' },
@@ -325,31 +326,14 @@ export default function DiaryPage() {
           <span>日記を保存する！ ✨</span>
         </button>
 
-        {/* これまでの日記（直近の履歴） */}
-        {diaries.length > 0 && (
-          <div className="pt-6 space-y-3">
-            <h3 className="font-black text-gray-700 text-xs px-1">
-              これまでに書いた日記 ({diaries.length}件)
-            </h3>
-            <div className="space-y-3">
-              {[...diaries].reverse().slice(0, 3).map((d) => (
-                <div key={d.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs space-y-1.5 text-left">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-gray-400 font-bold">{d.date}</span>
-                    {d.feeling && (
-                      <span className="font-black text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                        {d.feeling}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs font-bold text-gray-800 leading-relaxed">
-                    {d.content}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* これまでの日記カレンダー */}
+        <div className="pt-6 space-y-3">
+          <h3 className="font-black text-gray-800 text-sm px-1 flex items-center gap-1.5">
+            <span>📅 これまでに書いた日記カレンダー</span>
+            <span className="text-xs text-gray-500 font-bold">({diaries.length}件)</span>
+          </h3>
+          <DiaryCalendar diaries={diaries} isParentView={false} />
+        </div>
       </form>
     </div>
   );

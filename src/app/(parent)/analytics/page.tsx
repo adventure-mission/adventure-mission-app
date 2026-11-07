@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { ArrowLeft, TrendingUp, BookOpen, Star, Sparkles, Smile, Printer, ShieldAlert, Flame } from 'lucide-react';
 import { calculateStreak } from '@/lib/streak';
+import DiaryCalendar from '@/components/common/DiaryCalendar';
 
 export default function AnalyticsPage() {
   const router = useRouter();
@@ -348,80 +349,14 @@ export default function AnalyticsPage() {
           </div>
         </section>
 
-        {/* 3. できたこと日記の履歴 */}
+        {/* 3. できたこと日記の履歴（カレンダー形式） */}
         <section className="space-y-3">
           <h2 className="text-base font-bold text-text-main flex items-center gap-1.5 px-1">
             <BookOpen className="w-5 h-5 text-quest-routine" />
-            できたこと日記の履歴
+            できたこと日記のカレンダー 📅
           </h2>
 
-          <div className="space-y-4">
-            {diaries.length === 0 ? (
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center text-xs font-bold text-text-muted">
-                まだ日記（振り返り）が書かれていません。
-              </div>
-            ) : (
-              [...diaries].reverse().map((diary) => (
-                <div
-                  key={diary.id}
-                  className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3 animate-fade-in"
-                >
-                  {/* ヘッダー：日付と感情 */}
-                  <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                    <span className="text-xs font-semibold text-text-muted">{diary.date}</span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xl">{emotionEmojis[diary.emotion]}</span>
-                      <span className="text-xs font-bold text-text-muted">
-                        {emotionLabels[diary.emotion]}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 内容 */}
-                  <p className="text-sm text-text-main leading-relaxed font-medium select-text">
-                    {diary.content}
-                  </p>
-
-                  {/* タグ情報（どこで・だれと・気持ち） */}
-                  {(diary.location || diary.people || diary.feeling) && (
-                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      {diary.location && (
-                        <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                          📍 {diary.location}
-                        </span>
-                      )}
-                      {diary.people && (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                          👥 {diary.people}
-                        </span>
-                      )}
-                      {diary.feeling && (
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                          💖 {diary.feeling}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* 親からのスタンプやフィードバック */}
-                  <div className="flex justify-end gap-2 pt-2 border-t border-gray-50 print:hidden">
-                    <button 
-                      onClick={() => alert('花丸を贈りました！💮')}
-                      className="text-xs font-bold text-quest-mission bg-quest-mission-bg px-3 py-1.5 rounded-full hover:bg-blue-100 active:scale-95 transition-all"
-                    >
-                      花丸を贈る 💮
-                    </button>
-                    <button 
-                      onClick={() => alert('いいね！を送信しました！👍')}
-                      className="text-xs font-bold text-quest-routine bg-quest-routine-bg px-3 py-1.5 rounded-full hover:bg-green-100 active:scale-95 transition-all"
-                    >
-                      いいね！ 👍
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <DiaryCalendar diaries={diaries} isParentView={true} />
         </section>
 
       </div>
