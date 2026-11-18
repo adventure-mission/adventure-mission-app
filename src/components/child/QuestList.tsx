@@ -32,7 +32,7 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
   }
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 space-y-4 bg-background-light h-[calc(100vh-180px)]">
+    <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 space-y-2.5 bg-background-light h-[calc(100vh-180px)]">
       {/* 全クリ達成祝賀バナー */}
       {isAllCompleted && (
         <div className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 p-4 rounded-3xl text-white shadow-lg shadow-amber-200/50 flex items-center justify-between mb-2 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -89,7 +89,7 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
                 onPinSelect(questId);
               }
             }}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-quest-mission text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform hover:bg-blue-600"
+            className="flex items-center gap-1 px-3 py-2 bg-quest-mission text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-transform hover:bg-blue-600"
             title="完了して親に報告する"
           >
             <Check className="w-4 h-4 stroke-[3px]" />
@@ -100,7 +100,7 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
         if (status === 'pending') {
           actionButton = (
             <div
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-xl animate-pulse flex-shrink-0"
+              className="flex items-center gap-1 px-3 py-2 bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-lg animate-pulse flex-shrink-0"
             >
               <Hourglass className="w-3.5 h-3.5" />
               <span>確認中</span>
@@ -108,14 +108,14 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
           );
         } else if (status === 'completed') {
           actionButton = (
-            <div className="flex items-center gap-1 px-4 py-2.5 bg-yellow-400 text-white text-xs font-bold rounded-xl shadow-inner shadow-yellow-500/30 flex-shrink-0">
+            <div className="flex items-center gap-1 px-3 py-2 bg-yellow-400 text-white text-xs font-bold rounded-lg shadow-inner shadow-yellow-500/30 flex-shrink-0">
               <Check className="w-4 h-4 stroke-[3px]" />
               <span>達成！</span>
             </div>
           );
         } else if (status === 'skipped') {
           actionButton = (
-            <div className="flex items-center gap-1 px-4 py-2.5 bg-gray-300 text-gray-600 text-xs font-bold rounded-xl flex-shrink-0">
+            <div className="flex items-center gap-1 px-3 py-2 bg-gray-300 text-gray-600 text-xs font-bold rounded-lg flex-shrink-0">
               <span>お休み</span>
             </div>
           );
@@ -125,38 +125,38 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
           <div
             key={questId}
             onClick={() => onPinSelect(questId)}
-            className={`flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border-2 transition-all relative cursor-pointer hover:shadow-md ${cardBgClass}`}
+            className={`flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl border-2 transition-all relative cursor-pointer hover:shadow-md ${cardBgClass}`}
           >
             {status === 'completed' && (
               <Sparkles className="absolute -top-2 -right-1 w-5 h-5 text-yellow-500 animate-bounce" />
             )}
 
             {/* 左側＆中央の情報エリア */}
-            <div className="flex items-start gap-4 flex-1">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* アイコンバッジ */}
-              <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-2xl shadow-inner flex-shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
                 {emoji}
               </div>
 
               {/* コンテンツ */}
-              <div className="space-y-1.5 min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {/* 特別な予定バッジ */}
                   {isEventJudgmentDay && status !== 'skipped' && (
-                    <span className="flex items-center gap-1 text-[10px] font-extrabold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-200 shadow-xs">
-                      <Sparkles className="w-3 h-3 text-amber-600 fill-amber-500" />
-                      特別な予定 (+{bonusStars ?? 5}★)
+                    <span className="flex items-center gap-1 text-[9px] font-extrabold text-amber-800 bg-amber-100/90 px-1.5 py-0.5 rounded-full border border-amber-200">
+                      <Sparkles className="w-2.5 h-2.5 text-amber-600 fill-amber-500" />
+                      特別 (+{bonusStars ?? 5}★)
                     </span>
                   )}
                   {status === 'skipped' && (
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
+                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-600">
                       お休み
                     </span>
                   )}
-                  
+
                   {/* 時間バブル */}
-                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-text-muted bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">
-                    <Clock className="w-3 h-3 text-gray-400" />
+                  <span className="flex items-center gap-0.5 text-[9px] font-extrabold text-text-muted bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-200">
+                    <Clock className="w-2.5 h-2.5 text-gray-400" />
                     {time || 'いつでも'}
                   </span>
 
@@ -168,7 +168,7 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
                         e.stopPropagation();
                         onStampClick?.(questId);
                       }}
-                      className="flex items-center gap-1 text-[10px] font-black text-amber-900 bg-amber-100/95 hover:bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-xs active:scale-95 transition-transform"
+                      className="flex items-center gap-1 text-[9px] font-black text-amber-900 bg-amber-100/95 hover:bg-amber-200 px-2 py-0.5 rounded-full border border-amber-300 active:scale-95 transition-transform"
                       title="スタンプを見る"
                     >
                       {stamp}
@@ -176,19 +176,19 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
                   )}
                 </div>
 
-                <h3 className="font-bold text-text-main text-base leading-snug truncate">
+                <h3 className="font-bold text-text-main text-sm leading-snug truncate">
                   {title}
                 </h3>
 
                 {/* 難易度(星数) */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   {Array.from({ length: difficulty }).map((_, i) => (
-                    <Star key={i} className={`w-3.5 h-3.5 ${status === 'skipped' ? 'text-gray-300 fill-gray-300' : 'text-yellow-400 fill-yellow-400'}`} />
+                    <Star key={i} className={`w-3 h-3 ${status === 'skipped' ? 'text-gray-300 fill-gray-300' : 'text-yellow-400 fill-yellow-400'}`} />
                   ))}
                   {isEventJudgmentDay && status !== 'skipped' && (
-                    <span className="text-[10px] font-black text-amber-600 ml-1.5 flex items-center gap-0.5">
-                      <Gift className="w-3 h-3" />
-                      ボーナス星 +{bonusStars ?? 5}
+                    <span className="text-[9px] font-black text-amber-600 ml-1 flex items-center gap-0.5">
+                      <Gift className="w-2.5 h-2.5" />
+                      +{bonusStars ?? 5}
                     </span>
                   )}
                 </div>
@@ -196,7 +196,7 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
             </div>
 
             {/* 右側のアクションボタンエリア */}
-            <div className="mt-4 md:mt-0 flex justify-end items-center flex-shrink-0 md:pl-4 border-t md:border-t-0 border-gray-100/50 pt-3 md:pt-0">
+            <div className="mt-2 md:mt-0 flex justify-end items-center flex-shrink-0 md:pl-3">
               {/* 編集ボタン */}
               {status !== 'completed' && (
                 <button
@@ -204,10 +204,10 @@ export default function QuestList({ pins, onPinSelect, onComplete, onShowAllClea
                     e.stopPropagation();
                     router.push(`/quest/new?edit=${questId}`);
                   }}
-                  className="flex items-center justify-center w-9 h-9 border border-gray-200 bg-white hover:bg-gray-50 text-text-muted hover:text-text-main rounded-xl transition-all mr-2 flex-shrink-0 shadow-sm active:scale-95"
+                  className="flex items-center justify-center w-8 h-8 border border-gray-200 bg-white hover:bg-gray-50 text-text-muted hover:text-text-main rounded-lg transition-all mr-1.5 flex-shrink-0 active:scale-95"
                   title="予定を変更する"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-3.5 h-3.5" />
                 </button>
               )}
               {actionButton}

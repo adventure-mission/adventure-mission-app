@@ -216,91 +216,93 @@ export default function RoutePage() {
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background-light relative">
       {/* 上部ヘッダー */}
-      <header className="bg-white border-b border-gray-100 px-3 py-3 flex items-center justify-between z-20 shadow-sm gap-2 overflow-hidden">
-        <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
-          {/* プロフィールアイコンの代わり */}
-          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-500 flex-shrink-0">
-            {profile?.display_name?.[0] || '礼'}
+      <header className="bg-white border-b border-gray-100 z-20 shadow-sm">
+        {/* 1行目: プロフィール＋ボタン群 */}
+        <div className="px-3 pt-2.5 pb-1 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* プロフィールアイコン */}
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-500 text-sm flex-shrink-0">
+              {profile?.display_name?.[0] || '礼'}
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xs font-bold text-text-main leading-tight truncate">
+                {profile?.display_name || '礼'} の予定表
+              </h1>
+              <p className="text-[10px] font-bold text-text-muted">
+                {getFormattedDate(activeTab)}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xs font-bold text-text-main leading-tight truncate">
-              {profile?.display_name || '礼'} の予定表
-            </h1>
-            <p className="text-[10px] font-bold text-text-muted mt-0.5">
-              {getFormattedDate(activeTab)}
-            </p>
-            {/* オフライン表示 */}
-            <div className="flex items-center gap-1 mt-0.5">
-              {isOffline ? (
-                <span className="flex items-center text-[9px] text-orange-500 font-bold bg-orange-50 px-1 py-0.5 rounded-full">
-                  <WifiOff className="w-2 h-2 mr-0.5" />
-                  オフライン
-                </span>
-              ) : (
-                <span className="flex items-center text-[9px] text-green-500 font-bold bg-green-50 px-1 py-0.5 rounded-full">
-                  <Wifi className="w-2 h-2 mr-0.5" />
-                  オンライン
+
+          {/* アイコンボタン群 */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {/* 連続達成ストリークバッジ */}
+            <StreakBadge streakInfo={streakInfo} compact />
+
+            {/* 親ダッシュボードボタン */}
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="relative w-7 h-7 flex items-center justify-center rounded-full bg-blue-50 active:scale-95 transition-all border border-blue-200"
+              title="親ダッシュボード"
+            >
+              <Shield className="w-3.5 h-3.5 text-quest-mission" />
+              {pendingCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-bounce">
+                  {pendingCount}
                 </span>
               )}
-            </div>
+            </button>
+
+            {/* 成長グラフボタン */}
+            <button
+              onClick={() => router.push('/analytics')}
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-purple-50 active:scale-95 transition-all border border-purple-200"
+              title="成長グラフ"
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+            </button>
+
+            {/* ほしいものリストボタン */}
+            <button
+              onClick={() => router.push('/wishes')}
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 active:scale-95 transition-all border border-red-200"
+              title="ほしいものリスト"
+            >
+              <Gift className="w-3.5 h-3.5 text-red-500" />
+            </button>
           </div>
         </div>
 
-        {/* 星の獲得状況 ＆ アイコンボタン（親ダッシュボード・成長グラフ） */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {/* 連続達成ストリークバッジ */}
-          <StreakBadge streakInfo={streakInfo} compact />
-
-          {/* 親ダッシュボードボタン（アイコンのみ） */}
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="relative w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all text-quest-mission border border-blue-200 shadow-sm"
-            title="親ダッシュボード（承認・予定管理）"
-          >
-            <Shield className="w-3.5 h-3.5 text-quest-mission" />
-            {pendingCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-bounce shadow">
-                {pendingCount}
-              </span>
-            )}
-          </button>
-
-          {/* 成長グラフボタン（アイコンのみ） */}
-          <button
-            onClick={() => router.push('/analytics')}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-50 hover:bg-purple-100 active:scale-95 transition-all text-purple-600 border border-purple-200 shadow-sm"
-            title="成長グラフを見る"
-          >
-            <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
-          </button>
-
-          {/* ほしいものリストボタン（アイコンのみ） */}
-          <button
-            onClick={() => router.push('/wishes')}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 active:scale-95 transition-all text-red-500 border border-red-200 shadow-sm"
-            title="ほしいものリストを見る"
-          >
-            <Gift className="w-3.5 h-3.5 text-red-500" />
-          </button>
-
-          <div className="flex flex-col items-end gap-1">
-            {/* 今日獲得できる星 */}
-            <div className="flex items-center gap-0.5 bg-yellow-50 border border-yellow-100 px-1.5 py-0.5 rounded-full">
-              <span className="text-[9px] font-bold text-yellow-700">今日:</span>
-              <Star className="w-3 h-3 text-yellow-500 fill-yellow-400" />
-              <span className="font-extrabold text-yellow-700 text-[10px]">
-                {todayEarned} / {todayTotal}
-              </span>
-            </div>
-
-            {/* トータル星 */}
-            <div className="flex items-center gap-0.5 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">
-              <span className="text-[9px] font-bold text-blue-700">合計:</span>
-              <Star className="w-3 h-3 text-blue-500 fill-blue-300" />
-              <span className="font-extrabold text-blue-700 text-[10px]">
-                {profile?.total_stars ?? 12}
-              </span>
-            </div>
+        {/* 2行目: 星情報バー */}
+        <div className="px-3 pb-2 flex items-center gap-2">
+          {/* オフライン表示 */}
+          {isOffline ? (
+            <span className="flex items-center text-[9px] text-orange-500 font-bold bg-orange-50 px-1.5 py-0.5 rounded-full border border-orange-200">
+              <WifiOff className="w-2.5 h-2.5 mr-0.5" />
+              オフライン
+            </span>
+          ) : (
+            <span className="flex items-center text-[9px] text-green-500 font-bold bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200">
+              <Wifi className="w-2.5 h-2.5 mr-0.5" />
+              オンライン
+            </span>
+          )}
+          <div className="flex-1" />
+          {/* 今日の星 */}
+          <div className="flex items-center gap-0.5 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-bold text-yellow-700">今日:</span>
+            <Star className="w-3 h-3 text-yellow-500 fill-yellow-400" />
+            <span className="font-extrabold text-yellow-700 text-[10px]">
+              {todayEarned} / {todayTotal}
+            </span>
+          </div>
+          {/* 合計の星 */}
+          <div className="flex items-center gap-0.5 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-bold text-blue-700">合計:</span>
+            <Star className="w-3 h-3 text-blue-500 fill-blue-300" />
+            <span className="font-extrabold text-blue-700 text-[10px]">
+              {profile?.total_stars ?? 12}
+            </span>
           </div>
         </div>
       </header>
