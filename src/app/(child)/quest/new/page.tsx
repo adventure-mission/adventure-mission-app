@@ -13,7 +13,7 @@ function QuestForm() {
   const editId = searchParams.get('edit');
   const fromParam = searchParams.get('from');
   const backUrl = fromParam === 'dashboard' ? '/dashboard' : '/route';
-  const { presetQuests, addQuest, quests, updateQuest, addPresetQuest } = useAppStore();
+  const { addQuest, quests, updateQuest } = useAppStore();
 
   // マウントチェック (Next.js Hydrationエラー対策)
   const [mounted, setMounted] = useState(false);
@@ -48,9 +48,6 @@ function QuestForm() {
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
   const [isSpecial, setIsSpecial] = useState(false);
 
-  // プリセット連携
-  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
-  const [saveAsPreset, setSaveAsPreset] = useState(false);
 
   // 初期日付を今日にセット
   useEffect(() => {
@@ -133,20 +130,6 @@ function QuestForm() {
     }
   }, [editId, quests]);
 
-  // よく使う予定（プリセット）チップをクリックした時の自動入力
-  const handlePresetClick = (preset: typeof presetQuests[0]) => {
-    if (selectedPresetId === preset.id) {
-      setSelectedPresetId(null);
-      return;
-    }
-    setSelectedPresetId(preset.id);
-    setTitle(preset.title);
-    setGoal(preset.goal || '');
-    setPromise(preset.promise || '');
-    setReward(preset.reward || '');
-    setDifficulty(preset.difficulty);
-    setIsSpecial(preset.type === 'event');
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,21 +202,6 @@ function QuestForm() {
         bonusStars: isSpecial ? 5 : undefined,
       });
 
-      // 「よく使う予定」への保存がチェックされている場合
-      if (saveAsPreset && title.trim()) {
-        const alreadyExists = presetQuests.some((p) => p.title.trim() === title.trim());
-        if (!alreadyExists) {
-          addPresetQuest({
-            id: `pt_custom_${Date.now()}`,
-            title: title.trim(),
-            type: isSpecial ? 'event' : 'mission',
-            difficulty,
-            goal: goal.trim() || undefined,
-            promise: promise.trim() || undefined,
-            reward: reward.trim() || undefined,
-          });
-        }
-      }
 
       confetti({
         particleCount: 100,
@@ -262,47 +230,7 @@ function QuestForm() {
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         
-        {/* 0. よく使う予定からワンタップで入力 */}
-        {presetQuests.length > 0 && (
-          <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-text-muted flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-yellow-500 fill-yellow-400" />
-                よく使う予定（タップで自動入力）
-              </label>
-              {selectedPresetId && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedPresetId(null)}
-                  className="text-[11px] text-text-muted hover:text-text-main font-semibold"
-                >
-                  選択解除
-                </button>
-              )}
-            </div>
 
-            <div className="flex flex-wrap gap-2 pt-1">
-              {presetQuests.map((preset) => {
-                const isSelected = selectedPresetId === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handlePresetClick(preset)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1 ${
-                      isSelected
-                        ? 'bg-quest-mission text-white border-transparent shadow-sm scale-105'
-                        : 'bg-gray-50 hover:bg-gray-100 text-text-main border-gray-200/80 active:scale-95'
-                    }`}
-                  >
-                    {preset.type === 'event' && <span>⭐</span>}
-                    <span>{preset.title}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
 
         {/* 1. 基本設定 */}
         <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
@@ -642,21 +570,7 @@ function QuestForm() {
           </div>
         </section>
 
-        {/* 5. よく使う予定にも残す（新規追加時のみ） */}
-        {!editId && (
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="savePresetCheckbox"
-              checked={saveAsPreset}
-              onChange={(e) => setSaveAsPreset(e.target.checked)}
-              className="w-5 h-5 rounded text-quest-mission focus:ring-0 cursor-pointer accent-quest-mission"
-            />
-            <label htmlFor="savePresetCheckbox" className="text-xs font-bold text-text-main cursor-pointer select-none">
-              この予定を「よく使う予定」にも保存する
-            </label>
-          </div>
-        )}
+
 
         {/* 登録ボタン */}
         <button
