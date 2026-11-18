@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { DiaryEntry } from '@/types';
+import { formatLocalDate, getTodayLocalDateStr } from '@/lib/dateUtils';
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,8 +29,8 @@ const EMOTIONS: Record<string, { emoji: string; label: string; bg: string; text:
 };
 
 export default function DiaryCalendar({ diaries, isParentView = true }: DiaryCalendarProps) {
-  // 今日の日付文字列 (YYYY-MM-DD)
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  // 今日の日付文字列 (YYYY-MM-DD: 日本時間・ローカル時間基準)
+  const todayStr = useMemo(() => getTodayLocalDateStr(), []);
 
   // 直近の日記がある日付、または今日を初期選択
   const initialDate = useMemo(() => {
@@ -83,7 +84,7 @@ export default function DiaryCalendar({ diaries, isParentView = true }: DiaryCal
     for (let i = firstDay - 1; i >= 0; i--) {
       const dayNum = prevMonthTotalDays - i;
       const d = new Date(year, month - 1, dayNum);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(d);
       cells.push({
         dateStr,
         dayNumber: dayNum,
@@ -95,7 +96,7 @@ export default function DiaryCalendar({ diaries, isParentView = true }: DiaryCal
     // 当月分
     for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
       const d = new Date(year, month, dayNum);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(d);
       cells.push({
         dateStr,
         dayNumber: dayNum,
@@ -109,7 +110,7 @@ export default function DiaryCalendar({ diaries, isParentView = true }: DiaryCal
     if (remaining < 7) {
       for (let dayNum = 1; dayNum <= remaining; dayNum++) {
         const d = new Date(year, month + 1, dayNum);
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = formatLocalDate(d);
         cells.push({
           dateStr,
           dayNumber: dayNum,

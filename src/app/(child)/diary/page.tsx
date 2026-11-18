@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { ArrowLeft, Save, Heart, Sparkles, MapPin, Users, HelpCircle, Smile, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import DiaryCalendar from '@/components/common/DiaryCalendar';
+import { getTodayLocalDateStr } from '@/lib/dateUtils';
 
 const LOCATION_OPTIONS = [
   { id: '家', label: '家', emoji: '🏠' },
@@ -96,7 +97,7 @@ export default function DiaryPage() {
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayLocalDateStr();
     const emotion = getEmotionType();
 
     // 自然な文章としての日記本文
@@ -145,7 +146,7 @@ export default function DiaryPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="font-black text-gray-800 text-lg">できたこと日記 📝</h1>
+            <h1 className="font-black text-gray-800 text-lg">日記 📝</h1>
             <p className="text-[11px] font-bold text-gray-400">今日あった良いことを振り返ろう！</p>
           </div>
         </div>
@@ -313,7 +314,7 @@ export default function DiaryPage() {
         <div className="bg-yellow-50/70 border border-yellow-200/80 rounded-2xl p-3.5 flex gap-2.5 items-start">
           <Heart className="w-4 h-4 text-red-500 fill-red-400 mt-0.5 shrink-0" />
           <p className="text-[11px] text-yellow-900 leading-relaxed font-medium">
-            できたこと日記を書くと、自分の「良いところ」がたくさん見つかるよ！どんな小さなことでも、できたことは立派な達成です。
+            日記を書くと、自分の「良いところ」がたくさん見つかるよ！どんな小さなことでも、できたことは立派な達成です。
           </p>
         </div>
 

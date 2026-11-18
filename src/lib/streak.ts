@@ -1,4 +1,5 @@
 import { RegisteredQuest } from '@/types';
+import { formatLocalDate } from './dateUtils';
 
 export interface StreakInfo {
   currentStreak: number;
@@ -22,7 +23,7 @@ export interface StreakInfo {
 export const getOffsetDateStr = (offset = 0, baseDate = new Date()): string => {
   const d = new Date(baseDate);
   d.setDate(d.getDate() + offset);
-  return d.toISOString().split('T')[0];
+  return formatLocalDate(d);
 };
 
 /**

@@ -6,9 +6,10 @@ import { StreakInfo } from '@/lib/streak';
 
 interface StreakBadgeProps {
   streakInfo: StreakInfo;
+  compact?: boolean;
 }
 
-export default function StreakBadge({ streakInfo }: StreakBadgeProps) {
+export default function StreakBadge({ streakInfo, compact = false }: StreakBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const {
     currentStreak,
@@ -26,7 +27,7 @@ export default function StreakBadge({ streakInfo }: StreakBadgeProps) {
       {/* ストリークバッジ（タップで詳細モーダル） */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all transform active:scale-95 shadow-sm ${
+        className={`flex items-center gap-1 ${compact ? 'px-2 py-1' : 'px-3 py-1.5'} rounded-full font-bold transition-all transform active:scale-95 shadow-sm ${
           isTodayCompleted
             ? 'bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 text-white shadow-orange-200 shadow-md ring-2 ring-orange-300 animate-pulse'
             : currentStreak > 0
@@ -36,7 +37,7 @@ export default function StreakBadge({ streakInfo }: StreakBadgeProps) {
         title="連続達成ストリーク（タップで詳細）"
       >
         <Flame
-          className={`w-4 h-4 ${
+          className={`${compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} ${
             isTodayCompleted
               ? 'fill-white text-white drop-shadow'
               : currentStreak > 0
@@ -45,16 +46,16 @@ export default function StreakBadge({ streakInfo }: StreakBadgeProps) {
           }`}
         />
         <div className="flex items-baseline gap-0.5">
-          <span className="text-sm font-black tracking-tight">{currentStreak}</span>
-          <span className="text-[11px] font-bold">日連続</span>
+          <span className={`${compact ? 'text-xs' : 'text-sm'} font-black tracking-tight`}>{currentStreak}</span>
+          {!compact && <span className="text-[11px] font-bold">日連続</span>}
         </div>
 
         {/* 今日完了マーク */}
-        {isTodayCompleted ? (
+        {isTodayCompleted && !compact ? (
           <span className="ml-1 text-[10px] bg-white/20 backdrop-blur-xs px-1.5 py-0.2 rounded-full font-black">
             達成!
           </span>
-        ) : remainingToday > 0 ? (
+        ) : remainingToday > 0 && !compact ? (
           <span className="ml-0.5 text-[10px] text-orange-600/80 font-bold hidden sm:inline">
             (あと{remainingToday})
           </span>

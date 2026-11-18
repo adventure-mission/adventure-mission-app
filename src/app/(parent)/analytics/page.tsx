@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { ArrowLeft, TrendingUp, BookOpen, Star, Sparkles, Smile, Printer, ShieldAlert, Flame } from 'lucide-react';
 import { calculateStreak } from '@/lib/streak';
 import DiaryCalendar from '@/components/common/DiaryCalendar';
+import { formatLocalDate } from '@/lib/dateUtils';
 
 export default function AnalyticsPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function AnalyticsPage() {
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      arr.push(d.toISOString().split('T')[0]);
+      arr.push(formatLocalDate(d));
     }
     return arr;
   };

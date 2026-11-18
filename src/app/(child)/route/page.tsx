@@ -14,6 +14,7 @@ import StreakBadge from '@/components/child/StreakBadge';
 import AllClearModal from '@/components/child/AllClearModal';
 import StampReceivedModal from '@/components/child/StampReceivedModal';
 import { type RegisteredQuest } from '@/types';
+import { formatLocalDate, getTodayLocalDateStr } from '@/lib/dateUtils';
 
 export default function RoutePage() {
   const router = useRouter();
@@ -62,7 +63,7 @@ export default function RoutePage() {
       if (tab === 'tomorrow') {
         d.setDate(d.getDate() + 1);
       }
-      return d.toISOString().split('T')[0];
+      return formatLocalDate(d);
     };
 
     const targetDate = getTargetDateStr(activeTab);
@@ -156,7 +157,7 @@ export default function RoutePage() {
   // 一覧から「できた！」ワンタップで即時報告
   const handleComplete = async (questId: string) => {
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getTodayLocalDateStr();
       
       // 心地よいバイブレーション（対応端末のみ）
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -215,29 +216,29 @@ export default function RoutePage() {
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background-light relative">
       {/* 上部ヘッダー */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-20 shadow-sm">
-        <div className="flex items-center gap-3">
+      <header className="bg-white border-b border-gray-100 px-3 py-3 flex items-center justify-between z-20 shadow-sm gap-2 overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
           {/* プロフィールアイコンの代わり */}
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-500">
+          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-500 flex-shrink-0">
             {profile?.display_name?.[0] || '礼'}
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-text-main leading-tight">
+          <div className="min-w-0">
+            <h1 className="text-xs font-bold text-text-main leading-tight truncate">
               {profile?.display_name || '礼'} の予定表
             </h1>
-            <p className="text-[11px] font-bold text-text-muted mt-0.5">
+            <p className="text-[10px] font-bold text-text-muted mt-0.5">
               {getFormattedDate(activeTab)}
             </p>
             {/* オフライン表示 */}
             <div className="flex items-center gap-1 mt-0.5">
               {isOffline ? (
-                <span className="flex items-center text-[10px] text-orange-500 font-bold bg-orange-50 px-1.5 py-0.5 rounded-full">
-                  <WifiOff className="w-2.5 h-2.5 mr-0.5" />
-                  オフライン（保存中）
+                <span className="flex items-center text-[9px] text-orange-500 font-bold bg-orange-50 px-1 py-0.5 rounded-full">
+                  <WifiOff className="w-2 h-2 mr-0.5" />
+                  オフライン
                 </span>
               ) : (
-                <span className="flex items-center text-[10px] text-green-500 font-bold bg-green-50 px-1.5 py-0.5 rounded-full">
-                  <Wifi className="w-2.5 h-2.5 mr-0.5" />
+                <span className="flex items-center text-[9px] text-green-500 font-bold bg-green-50 px-1 py-0.5 rounded-full">
+                  <Wifi className="w-2 h-2 mr-0.5" />
                   オンライン
                 </span>
               )}
@@ -246,19 +247,19 @@ export default function RoutePage() {
         </div>
 
         {/* 星の獲得状況 ＆ アイコンボタン（親ダッシュボード・成長グラフ） */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           {/* 連続達成ストリークバッジ */}
-          <StreakBadge streakInfo={streakInfo} />
+          <StreakBadge streakInfo={streakInfo} compact />
 
           {/* 親ダッシュボードボタン（アイコンのみ） */}
           <button
             onClick={() => router.push('/dashboard')}
-            className="relative w-9 h-9 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all text-quest-mission border border-blue-200 shadow-sm"
+            className="relative w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all text-quest-mission border border-blue-200 shadow-sm"
             title="親ダッシュボード（承認・予定管理）"
           >
-            <Shield className="w-4 h-4 text-quest-mission" />
+            <Shield className="w-3.5 h-3.5 text-quest-mission" />
             {pendingCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-bounce shadow">
                 {pendingCount}
               </span>
             )}
@@ -267,36 +268,36 @@ export default function RoutePage() {
           {/* 成長グラフボタン（アイコンのみ） */}
           <button
             onClick={() => router.push('/analytics')}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-purple-50 hover:bg-purple-100 active:scale-95 transition-all text-purple-600 border border-purple-200 shadow-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-50 hover:bg-purple-100 active:scale-95 transition-all text-purple-600 border border-purple-200 shadow-sm"
             title="成長グラフを見る"
           >
-            <TrendingUp className="w-4 h-4 text-purple-600" />
+            <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
           </button>
 
           {/* ほしいものリストボタン（アイコンのみ） */}
           <button
             onClick={() => router.push('/wishes')}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 active:scale-95 transition-all text-red-500 border border-red-200 shadow-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 active:scale-95 transition-all text-red-500 border border-red-200 shadow-sm"
             title="ほしいものリストを見る"
           >
-            <Gift className="w-4 h-4 text-red-500" />
+            <Gift className="w-3.5 h-3.5 text-red-500" />
           </button>
 
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex flex-col items-end gap-1">
             {/* 今日獲得できる星 */}
-            <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-100 px-2.5 py-1 rounded-full">
-              <span className="text-[10px] font-bold text-yellow-700">今日:</span>
-              <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-400" />
-              <span className="font-extrabold text-yellow-700 text-xs">
+            <div className="flex items-center gap-0.5 bg-yellow-50 border border-yellow-100 px-1.5 py-0.5 rounded-full">
+              <span className="text-[9px] font-bold text-yellow-700">今日:</span>
+              <Star className="w-3 h-3 text-yellow-500 fill-yellow-400" />
+              <span className="font-extrabold text-yellow-700 text-[10px]">
                 {todayEarned} / {todayTotal}
               </span>
             </div>
 
             {/* トータル星 */}
-            <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
-              <span className="text-[10px] font-bold text-blue-700">合計:</span>
-              <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-300" />
-              <span className="font-extrabold text-blue-700 text-xs">
+            <div className="flex items-center gap-0.5 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">
+              <span className="text-[9px] font-bold text-blue-700">合計:</span>
+              <Star className="w-3 h-3 text-blue-500 fill-blue-300" />
+              <span className="font-extrabold text-blue-700 text-[10px]">
                 {profile?.total_stars ?? 12}
               </span>
             </div>
@@ -356,7 +357,7 @@ export default function RoutePage() {
         onPinSelect={handlePinSelect}
         onComplete={handleComplete}
         onShowAllClear={() => {
-          const todayStr = new Date().toISOString().split('T')[0];
+          const todayStr = getTodayLocalDateStr();
           awardAllClearBonus(todayStr);
           setShowAllClearModal(true);
         }}

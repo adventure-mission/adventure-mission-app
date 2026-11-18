@@ -8,15 +8,10 @@ import {
   syncUpdateProfile,
   syncDeleteQuest,
 } from '@/lib/syncService';
+import { formatLocalDate, getTodayLocalDateStr } from '@/lib/dateUtils';
 
-// 初期状態のための日付文字列取得
-const getTodayStr = (offset = 0) => {
-  const d = new Date();
-  if (offset !== 0) {
-    d.setDate(d.getDate() + offset);
-  }
-  return d.toISOString().split('T')[0];
-};
+// 初期状態のための日付文字列取得 (ローカル時間・JST基準)
+const getTodayStr = (offset = 0) => getTodayLocalDateStr(offset);
 
 // 初期の親設定プリセットテンプレート
 const initialPresets: QuestTemplate[] = [
@@ -193,7 +188,7 @@ export const useAppStore = create<AppState>()(
               const currentDay = current.getDay(); // 0-6
 
               if (quest.recurrenceDays.includes(currentDay)) {
-                const dateStr = current.toISOString().split('T')[0];
+                const dateStr = formatLocalDate(current);
                 const instance: RegisteredQuest = {
                   ...quest,
                   id: `q_instance_${masterId}_${dateStr}`,
@@ -252,7 +247,7 @@ export const useAppStore = create<AppState>()(
             const currentDay = current.getDay();
 
             if (master.recurrenceDays?.includes(currentDay)) {
-              const dateStr = current.toISOString().split('T')[0];
+              const dateStr = formatLocalDate(current);
               const instanceId = `q_instance_${master.id}_${dateStr}`;
               
               const exists = state.quests.some((q) => q.id === instanceId || (q.parentRecurringId === master.id && q.date === dateStr));

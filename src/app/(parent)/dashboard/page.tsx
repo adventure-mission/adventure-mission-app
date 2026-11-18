@@ -8,6 +8,7 @@ import ApprovalCard from '@/components/parent/ApprovalCard';
 import { type Wish, type RegisteredQuest } from '@/types';
 import { Moon, Star, Bell, Shield, Gift, Sparkles, CheckCircle2, Trash2, Plus, Calendar, Clock, ArrowLeft, MapPin as MapPinIcon, Flame, ChevronDown, ChevronUp, Filter, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getTodayLocalDateStr } from '@/lib/dateUtils';
 import { calculateStreak } from '@/lib/streak';
 
 export default function ParentDashboard() {
@@ -154,14 +155,9 @@ export default function ParentDashboard() {
   });
 
   // 日付フィルター計算
-  const todayStr = new Date().toISOString().split('T')[0];
-  const tomorrowObj = new Date();
-  tomorrowObj.setDate(tomorrowObj.getDate() + 1);
-  const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
-
-  const weekLaterObj = new Date();
-  weekLaterObj.setDate(weekLaterObj.getDate() + 7);
-  const weekLaterStr = weekLaterObj.toISOString().split('T')[0];
+  const todayStr = getTodayLocalDateStr();
+  const tomorrowStr = getTodayLocalDateStr(1);
+  const weekLaterStr = getTodayLocalDateStr(7);
 
   const upcomingQuests = sortedQuests.filter((q) => q.date === todayStr || q.date === tomorrowStr);
   const weekQuests = sortedQuests.filter((q) => q.date >= todayStr && q.date <= weekLaterStr);

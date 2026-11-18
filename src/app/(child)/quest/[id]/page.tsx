@@ -7,6 +7,7 @@ import { useQuestSync } from '@/hooks/useQuestSync';
 import { useAppStore } from '@/store/useAppStore';
 import TaskSlider from '@/components/child/TaskSlider';
 import { ArrowLeft, Star, Compass, CheckCircle2, Clock, MapPin as MapPinIcon, Users, FileText, CheckSquare, Sparkles, Trash2 } from 'lucide-react';
+import { getTodayLocalDateStr } from '@/lib/dateUtils';
 
 export default function QuestDetailPage() {
   const router = useRouter();
@@ -142,7 +143,7 @@ export default function QuestDetailPage() {
   // 1. 小項目スライダー完了ハンドラ
   const handleFinish = async (completedIds: string[]) => {
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getTodayLocalDateStr();
       
       // Zustandローカル状態の更新（即時地図に反映）
       updateLocalQuestStatus(questId, 'pending');

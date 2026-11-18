@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
+import { getTodayLocalDateStr } from '@/lib/dateUtils';
 import { ArrowLeft, Save, Calendar, Clock, MapPin as MapPinIcon, Users, FileText, CheckSquare, Target, Settings, Sparkles, Plus } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -53,7 +54,7 @@ function QuestForm() {
 
   // 初期日付を今日にセット
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocalDateStr();
     setDate(today);
   }, []);
 
