@@ -12,7 +12,7 @@ export default function AnalyticsPage() {
   const router = useRouter();
   const { quests, diaries } = useAppStore();
   const [mounted, setMounted] = useState(false);
-  const [timeRange, setTimeRange] = useState<'1week' | '1month' | '3months'>('1week');
+  const [monthRange, setMonthRange] = useState<3 | 6 | 12>(3); // 表示する月数
 
   useEffect(() => {
     setMounted(true);
@@ -20,111 +20,77 @@ export default function AnalyticsPage() {
 
   if (!mounted) return null;
 
-  // 1. 選択された期間に応じた日付文字列リストを取得 (今日含む)
-  const getDaysCount = () => {
-    if (timeRange === '1month') return 30;
-    if (timeRange === '3months') return 90;
-    return 7;
-  };
+  // 月単位データ生成: 今月含む過去 N か月分
+  const getMonthlyData = (numMonths: number) => {
+    const result: {
+      monthKey: string;    // "2024-11"
+      axisLabel: string;   // "11月"
+      starCount: number;
+      emotionScoreAvg: number;
+      emotionEmoji: string;
+    }[] = [];
 
-  const getPastDays = (days: number) => {
-    const arr = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      arr.push(formatLocalDate(d));
-    }
-    return arr;
-  };
-  const pastDays = getPastDays(getDaysCount());
+    const now = new Date();
+    for (let i = numMonths - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+      const axisLabel = `${month}月`;
 
-  // 日付のフォーマット (例: "11/7" や 1週間の時は "11/7(土)")
-  const formatAxisDate = (dateStr: string, isShort = false) => {
-    const parts = dateStr.split('-');
-    if (parts.length < 3) return dateStr;
-    const m = parseInt(parts[1], 10);
-    const d = parseInt(parts[2], 10);
-    if (!isShort && timeRange === '1week') {
-      const days = ['日', '月', '火', '水', '木', '金', '土'];
-      const dayName = days[new Date(dateStr).getDay()];
-      return `${m}/${d}(${dayName})`;
+      // その月の完了クエスト
+      const monthQuests = quests.filter(
+        (q) => q.date.startsWith(monthKey) && q.status === 'completed'
+      );
+      const starCount = monthQuests.reduce((sum, q) => {
+        return sum + q.difficulty + (q.isEventJudgmentDay ? (q.bonusStars ?? 5) : 0);
+      }, 0);
+
+      // その月の日記感情スコア平均
+      const monthDiaries = diaries.filter((d) => d.date.startsWith(monthKey));
+      const scores = monthDiaries.map((d) => emotionScores[d.emotion] ?? 4);
+      const emotionScoreAvg = scores.length > 0
+        ? scores.reduce((s, v) => s + v, 0) / scores.length
+        : 4;
+
+      // その月の最頻感情
+      const emotionCount: Record<string, number> = {};
+      monthDiaries.forEach((d) => {
+        emotionCount[d.emotion] = (emotionCount[d.emotion] ?? 0) + 1;
+      });
+      const topEmotion = Object.entries(emotionCount).sort((a, b) => b[1] - a[1])[0]?.[0];
+      const emotionEmoji = topEmotion ? emotionEmojis[topEmotion] : '';
+
+      result.push({ monthKey, axisLabel, starCount, emotionScoreAvg, emotionEmoji });
     }
-    return `${m}/${d}`;
+    return result;
   };
 
   const emotionScores: Record<string, number> = {
-    happy: 5,
-    good: 4,
-    sad: 3,
-    tired: 2,
-    angry: 1
-  };
-
-  const emotionLabels: Record<string, string> = {
-    happy: '嬉しい！',
-    good: '普通',
-    sad: '悲しい',
-    tired: '疲れた',
-    angry: '怒り'
+    happy: 5, good: 4, sad: 3, tired: 2, angry: 1
   };
 
   const emotionEmojis: Record<string, string> = {
-    happy: '😆',
-    good: '🙂',
-    sad: '😢',
-    tired: '🥱',
-    angry: '😡'
+    happy: '😆', good: '🙂', sad: '😢', tired: '🥱', angry: '😡'
   };
 
-  // 2. 日ごとの予定達成数・獲得星数・感情を集計
-  const dailyData = pastDays.map((dateStr) => {
-    // その日の完了クエスト
-    const dayQuests = quests.filter((q) => q.date === dateStr && q.status === 'completed');
-    const starCount = dayQuests.reduce((sum, q) => {
-      const base = q.difficulty;
-      const bonus = q.isEventJudgmentDay ? (q.bonusStars ?? 5) : 0;
-      return sum + base + bonus;
-    }, 0);
-
-    // その日の日記と感情
-    const dayDiary = diaries.find((d) => d.date === dateStr);
-    const score = dayDiary ? emotionScores[dayDiary.emotion] : 4; // 書いてない日はデフォルトふつう(4)
-    const emoji = dayDiary ? emotionEmojis[dayDiary.emotion] : '';
-    const content = dayDiary ? dayDiary.content : null;
-    const emotionType = dayDiary ? dayDiary.emotion : null;
-
-    return {
-      dateStr,
-      axisLabel: formatAxisDate(dateStr),
-      shortDate: formatAxisDate(dateStr, true),
-      starCount,
-      emotionScore: score,
-      emotionEmoji: emoji,
-      emotionType,
-      content
-    };
-  });
-
-  const maxStars = Math.max(...dailyData.map((d) => d.starCount), 1);
-  const totalStarsInRange = dailyData.reduce((sum, d) => sum + d.starCount, 0);
+  const monthlyData = getMonthlyData(monthRange);
+  const maxStars = Math.max(...monthlyData.map((d) => d.starCount), 1);
+  const totalStarsInRange = monthlyData.reduce((sum, d) => sum + d.starCount, 0);
 
   // 連続達成ストリークの計算
   const streakInfo = calculateStreak(quests);
 
-  // 期間に応じたタイトル
-  const rangeLabel = timeRange === '1week' ? '1週間' : timeRange === '1month' ? '1か月' : '3か月';
-  const rangeDescription = timeRange === '1week' ? '過去7日間' : timeRange === '1month' ? '過去30日間' : '過去90日間';
+  const rangeLabel = `過去${monthRange}か月`;
 
-  // SVG折れ線グラフ用座標計算
-  const stepX = timeRange === '1week' ? 44 : 38;
-  const svgWidth = Math.max(320, 50 + (dailyData.length - 1) * stepX + 30);
-  const svgPoints = dailyData.map((d, index) => {
+  // SVG折れ線グラフ用座標計算（月単位）
+  const stepX = monthRange <= 6 ? 60 : 44;
+  const svgWidth = Math.max(300, 50 + (monthlyData.length - 1) * stepX + 50);
+  const svgPoints = monthlyData.map((d, index) => {
     const x = 40 + index * stepX;
-    const y = 145 - d.emotionScore * 25; // 5=20px, 4=45px, 3=70px, 2=95px, 1=120px
-    return { x, y, emoji: d.emotionEmoji, score: d.emotionScore, label: d.shortDate };
+    const y = 145 - d.emotionScoreAvg * 25;
+    return { x, y, emoji: d.emotionEmoji, label: d.axisLabel };
   });
-
-  // 折れ線用パス文字列の生成
   const pathD = svgPoints.reduce((d, p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `${d} L ${p.x} ${p.y}`), '');
 
   return (
@@ -157,26 +123,21 @@ export default function AnalyticsPage() {
       <div className="p-6 space-y-6 print:p-0">
         
         {/* 期間切り替えピル */}
-        <div className="flex bg-gray-100 p-1 rounded-2xl max-w-sm mx-auto print:hidden">
-          {(['1week', '1month', '3months'] as const).map((r) => {
-            const labels = {
-              '1week': '1週間 (7日)',
-              '1month': '1か月 (30日)',
-              '3months': '3か月 (90日)',
-            };
-            const isSelected = timeRange === r;
+        <div className="flex bg-gray-100 p-1 rounded-2xl max-w-xs mx-auto print:hidden">
+          {([3, 6, 12] as const).map((n) => {
+            const isSelected = monthRange === n;
             return (
               <button
-                key={r}
+                key={n}
                 type="button"
-                onClick={() => setTimeRange(r)}
+                onClick={() => setMonthRange(n)}
                 className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
                   isSelected
                     ? 'bg-white text-quest-mission shadow-xs'
                     : 'text-text-muted hover:text-text-main'
                 }`}
               >
-                {labels[r]}
+                {n}か月
               </button>
             );
           })}
@@ -208,51 +169,40 @@ export default function AnalyticsPage() {
               <span className="text-xs ml-0.5 font-bold">個</span>
             </div>
             <span className="text-[10px] text-yellow-700/80 font-bold block mt-0.5">
-              今日: {dailyData[dailyData.length - 1]?.starCount ?? 0}個
+              今月: {monthlyData[monthlyData.length - 1]?.starCount ?? 0}個
             </span>
           </div>
         </div>
 
-        {/* 1. 集めた星の数 (棒グラフ: 日付軸) */}
+        {/* 1. 集めた星の数 (棒グラフ: 月別) */}
         <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-text-muted flex items-center gap-1.5">
               <TrendingUp className="w-4 h-4 text-quest-mission" />
-              集めた星の数（{rangeDescription}・日付別）
+              集めた星の数（月別・{rangeLabel}）
             </h2>
-            {timeRange !== '1week' && (
-              <span className="text-[10px] text-gray-400 font-semibold print:hidden">
-                👉 横スクロールで全日確認できます
-              </span>
-            )}
           </div>
 
           <div className="overflow-x-auto no-scrollbar pb-1">
-            <div
-              className={`h-44 flex items-end gap-2 pt-6 border-b border-gray-100 pb-2 ${
-                timeRange === '1week' ? 'w-full justify-between' : 'min-w-max px-2'
-              }`}
-            >
-              {dailyData.map((data, idx) => {
-                const heightPercent = (data.starCount / maxStars) * 80; // 最大80%の高さ
+            <div className="h-44 flex items-end gap-3 pt-6 border-b border-gray-100 pb-2 w-full justify-between">
+              {monthlyData.map((data, idx) => {
+                const heightPercent = (data.starCount / maxStars) * 80;
                 return (
                   <div
                     key={idx}
-                    className={`flex flex-col items-center gap-2 group h-full justify-end ${
-                      timeRange === '1week' ? 'flex-1' : 'w-10 flex-shrink-0'
-                    }`}
+                    className="flex flex-col items-center gap-2 group h-full justify-end flex-1"
                   >
                     <span className="text-[10px] font-black text-yellow-600">
                       {data.starCount > 0 ? `${data.starCount}★` : ''}
                     </span>
                     <div
-                      className="w-full bg-yellow-200 rounded-t-lg transition-all duration-500 origin-bottom"
+                      className="w-full rounded-t-lg transition-all duration-500 origin-bottom"
                       style={{
                         height: `${heightPercent}%`,
-                        backgroundColor: data.starCount >= 5 ? '#FFCE54' : '#FFE8A3'
+                        backgroundColor: data.starCount >= 10 ? '#FFCE54' : '#FFE8A3'
                       }}
                     />
-                    <span className="text-[10px] font-bold text-text-muted whitespace-nowrap">
+                    <span className="text-[11px] font-bold text-text-muted whitespace-nowrap">
                       {data.axisLabel}
                     </span>
                   </div>
@@ -270,18 +220,13 @@ export default function AnalyticsPage() {
           </div>
         </section>
 
-        {/* 2. 心の状態 (折れ線グラフ: 日付軸) */}
+        {/* 2. 心の状態 (折れ線グラフ: 月別) */}
         <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-text-muted flex items-center gap-1.5">
               <Smile className="w-4 h-4 text-quest-event" />
-              心の状態（機嫌）の推移（{rangeDescription}）
+              心の状態（月別平均・{rangeLabel}）
             </h2>
-            {timeRange !== '1week' && (
-              <span className="text-[10px] text-gray-400 font-semibold print:hidden">
-                👉 横スクロールできます
-              </span>
-            )}
           </div>
 
           {/* SVG 折れ線グラフ */}
@@ -323,16 +268,15 @@ export default function AnalyticsPage() {
                 {/* 各データのプロット点 */}
                 {svgPoints.map((p, idx) => (
                   <g key={idx} className="cursor-pointer">
-                    {/* 点の二重丸 */}
                     <circle cx={p.x} cy={p.y} r="5" fill="#FFF" stroke="#FFCE54" strokeWidth="2.5" />
                     <circle cx={p.x} cy={p.y} r="2" fill="#FFCE54" />
-                    
-                    {/* 日付ラベル (M/D) */}
+
+                    {/* 月ラベル */}
                     <text x={p.x} y="145" textAnchor="middle" className="text-[9px] font-bold fill-gray-400">
                       {p.label}
                     </text>
 
-                    {/* 記録された日の絵文字ピン */}
+                    {/* 最頻感情の絵文字 */}
                     {p.emoji && (
                       <text x={p.x} y={p.y - 10} textAnchor="middle" className="text-xs">
                         {p.emoji}
@@ -345,8 +289,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] font-semibold text-gray-700 leading-relaxed">
-            💡 **機嫌の波のポイント**:
-            感情が「疲れた」「怒り」へ急激に下がっている日は、予定が多すぎたり、苦手な予定（宿題や片付けなど）と重なっていないか確認し、早めのサポートに繋げてください。
+            💡 月ごとの気分の平均値を表示しています。その月で最も多かった感情の絵文字が点の上に表示されます。
           </div>
         </section>
 
