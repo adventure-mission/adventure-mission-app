@@ -228,12 +228,12 @@ function QuestForm() {
         </h1>
       </header>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="p-4 space-y-5">
         
 
 
         {/* 1. 基本設定 */}
-        <section className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+        <section className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-4">
           {/* 日付 (必須) */}
           <div>
             <label className="text-xs font-bold text-text-muted flex items-center gap-1.5 mb-2">
@@ -244,7 +244,7 @@ function QuestForm() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-bold text-text-main bg-white"
+              className="w-full max-w-full px-3 py-3 rounded-xl border border-gray-200 focus:outline-none text-sm font-bold text-text-main bg-white box-border"
               required
             />
           </div>
